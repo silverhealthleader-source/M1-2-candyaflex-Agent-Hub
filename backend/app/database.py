@@ -1,4 +1,5 @@
 import json
+import os
 from functools import lru_cache
 from pathlib import Path
 
@@ -23,6 +24,9 @@ def get_db():
         if settings.environment == "production":
             raise DatabaseNotConfigured("운영 환경에서는 로컬 에뮬레이터를 사용할 수 없습니다.")
         return Client(project=settings.project_id, credentials=AnonymousCredentials())
+    # The SDK treats a present-but-empty variable as an emulator endpoint.
+    if os.environ.get("FIRESTORE_EMULATOR_HOST") == "":
+        os.environ.pop("FIRESTORE_EMULATOR_HOST", None)
     try:
         raw = settings.service_account.strip()
         certificate = json.loads(raw) if raw.startswith("{") else str(Path(raw or settings.credentials_path).expanduser())

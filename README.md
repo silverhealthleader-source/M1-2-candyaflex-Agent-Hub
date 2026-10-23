@@ -21,7 +21,7 @@
 
 FastAPI·Pydantic, Firestore 접근, GPT Responses API 연결 코드, 바닐라 HTML/CSS/JS 화면과 Render·Vercel 설정을 준비했습니다. API 테스트는 격리된 가상 기록과 모의 AI 응답으로 검증합니다.
 
-**실제 GPT 응답, 인터넷 Firestore 연결, Render·Vercel 배포는 아직 완료하지 않았습니다.** 제출 시 실제 실행 화면, 배포 URL, 데이터 저장·복원 확인을 추가해야 합니다. Function Calling과 MCP Server/GPT Actions는 선택 보너스로 아직 구현하지 않았습니다. 전체 허브는 시스템의 밝은/어두운 테마를 따르며 강사 화면의 수동 다크 모드 토글은 없습니다.
+인터넷 Firestore 연결과 실제 API의 데이터 추가·수정·삭제, 대화 저장·불러오기 검증을 완료했습니다. 실제 운영자료와 검증 화면은 비공개로 보관합니다. **실제 GPT 응답과 Render·Vercel 배포는 아직 완료하지 않았습니다.** 제출 시 실제 AI 실행 화면과 배포 URL을 추가해야 합니다. Function Calling과 MCP Server/GPT Actions는 선택 보너스로 아직 구현하지 않았습니다. 전체 허브는 시스템의 밝은/어두운 테마를 따르며 강사 화면의 수동 다크 모드 토글은 없습니다.
 
 ## 실행 순서 (Windows PowerShell)
 
@@ -86,7 +86,7 @@ node --check frontend/workspace.js
 node frontend/build.mjs
 ```
 
-테스트는 CRUD·요약·시간대 보존, 교재 경로 보호, 대화 저장·실패 처리, 계획과 실적 분리, 가상 자료 생성을 검증합니다. 실제 운영 데이터나 GPT 과금 호출을 사용하지 않습니다.
+격리된 자동 테스트 23개는 CRUD·요약·시간대 보존, 교재 경로 보호, 대화 저장·실패 처리, 계획과 실적 분리, 가상 자료 생성과 클라우드/에뮬레이터 연결 선택을 검증합니다. 자동 테스트에는 실제 운영 데이터나 GPT 과금 호출을 사용하지 않습니다. 빈 `FIRESTORE_EMULATOR_HOST` 값은 클라우드 연결 전에 제거하여 SDK가 빈 에뮬레이터 주소에 연결하지 않도록 합니다.
 
 ## 배포
 
