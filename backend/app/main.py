@@ -14,7 +14,7 @@ from .routers import chat, conversations, data, materials, plans
 from .services import ChatUnavailable
 
 settings = get_settings()
-app = FastAPI(title="캔디A융합 아카데미 허브 API", version="0.1.0", description="교육운영 기록 분석과 데이터 기반 강사 AI 비서")
+app = FastAPI(title="캔디A플렉스 에듀 융합에이전트 API", version="0.1.0", description="교육운영 기록 분석과 데이터 기반 강사 AI 비서")
 app.add_middleware(CORSMiddleware, allow_origins=list(settings.origins), allow_credentials=False,
                    allow_methods=["GET", "POST", "PUT", "DELETE"], allow_headers=["Authorization", "Content-Type"])
 bearer = HTTPBearer(auto_error=False)

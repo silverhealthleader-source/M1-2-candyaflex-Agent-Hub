@@ -2,16 +2,16 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#7560c8"><meta name="description" content="교육의 기록을 연결하고 다음 수업을 준비하는 강사 전용 AI 비서, 캔디A융합 아카데미 허브">
-  <title>강사 교육운영 · CandyAflex 아카데미</title>
+  <meta name="theme-color" content="#7560c8"><meta name="description" content="교육의 기록을 연결하고 다음 수업을 준비하는 강사 전용 AI 비서, 캔디A플렉스 에듀 융합에이전트">
+  <title>강사 교육운영 · 캔디A플렉스 에듀 융합에이전트</title>
   <link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="workspace.css"><link rel="stylesheet" href="planning.css"><link rel="stylesheet" href="branding.css"><script src="config.js" defer></script><script src="app.js" defer></script><script src="workspace.js" defer></script>
 </head>
 <body>
 <a class="skip-link" href="#main">본문으로 이동</a>
 <aside class="sidebar">
-  <a class="brand" href="index.html" aria-label="CandyAflex 아카데미 홈으로 돌아가기"><span class="brand-logo-frame"><img class="brand-logo" src="assets/candyaflex-logo.png" width="400" height="200" alt="CandyAflex AI 디지털 융합 아카데미 로고" decoding="async"></span><span>캔디A융합<small>ACADEMY HUB</small></span></a>
+  <a class="brand" href="index.html" aria-label="캔디A플렉스 에듀 융합에이전트 홈으로 돌아가기"><span class="brand-logo-frame"><img class="brand-logo" src="assets/candyaflex-logo.png" width="400" height="200" alt="캔디A플렉스 에듀 융합에이전트 로고" decoding="async"></span><span class="brand-title">캔디A플렉스 <small>에듀 융합에이전트</small></span></a>
   <div class="workspace-label">나의 교육 워크스페이스</div>
-  <nav aria-label="주 메뉴"><a class="nav-item academy-return" href="index.html" style="text-decoration:none">← 아카데미 전체 허브</a>
+  <nav aria-label="주 메뉴"><a class="nav-item academy-return" href="index.html" style="text-decoration:none">← 전체 에이전트 허브</a>
     <button class="nav-item active" data-view="agents"><span data-icon="sparkles"></span>에이전트 허브</button>
     <button class="nav-item" data-view="dashboard"><span data-icon="dashboard"></span>교육운영 대시보드</button>
     <button class="nav-item" data-view="calendar"><span data-icon="calendar"></span>월별 수업 블록</button>
@@ -75,7 +75,7 @@
     <section id="view-history" class="view" hidden>
       <div class="section-heading"><div><div class="eyebrow">CONTINUE THE CONVERSATION</div><h1 class="page-title">이전 대화 기록</h1><p>함께 나눈 이야기를 다시 열고, 생각을 이어가세요.</p></div><button class="button primary" id="history-new-chat"><span data-icon="plus"></span>새 대화 시작</button></div><div id="history-list" class="history-list"></div>
     </section>
-    <footer class="page-footer"><span>캔디A융합 아카데미 허브</span><span>교육의 경험을 연결하는 나만의 AI 비서</span></footer>
+    <footer class="page-footer"><span>캔디A플렉스 에듀 융합에이전트</span><span>교육의 경험을 연결하는 나만의 AI 비서</span></footer>
   </main>
 </div>
 <dialog id="record-dialog"><form id="record-form"><div class="dialog-heading"><div><span class="eyebrow">EDUCATION RECORD</span><h2 id="record-dialog-title">교육 기록 추가</h2></div><button type="button" class="icon-button" data-close="record-dialog" aria-label="닫기">×</button></div><label>교육명<input name="course_title" maxlength="200" required></label><div class="form-two"><label>교육일<input name="date" type="date" required></label><label>교육시간<input name="value" type="number" min="0" max="24" step="0.25" required></label></div><div class="form-two"><label>교육 방식<select name="mode"><option>집합</option><option>온라인</option><option>에듀버스</option><option>기타</option></select></label><label id="students-field">교육생 수<input name="students" type="number" min="0" max="100000" value="0"></label></div><label>교육 장소<input name="venue" maxlength="300"></label><label>수업 내용 · 메모<textarea name="memo" rows="3" maxlength="2000" required></textarea></label><p id="record-source-note" class="muted"></p><div class="dialog-actions"><button type="button" class="button secondary" data-close="record-dialog">취소</button><button class="button primary" type="submit" id="record-submit">저장하기</button></div></form></dialog>

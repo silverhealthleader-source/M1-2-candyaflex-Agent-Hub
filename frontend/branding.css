@@ -11,3 +11,7 @@
  .brand-logo-frame{width:44px;height:44px;flex-basis:44px}
  .brand .brand-logo{width:80px;height:40px;left:1px}
 }
+
+/* Full Korean site name, with a readable second line. */
+.brand .brand-title{min-width:0;font-size:17px;line-height:1.4;word-break:keep-all}
+.brand .brand-title small{font-size:12px;letter-spacing:-.3px;line-height:1.5;color:#81758e}
