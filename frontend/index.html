@@ -1,0 +1,519 @@
+<!doctype html><html lang="ko"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>CandyAflex AI 디지털 융합 아카데미</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="icon" type="image/png" href="assets/candyaflex-logo.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: 고정 좌측 사이드바(영역 메뉴) + 우측 단일 페이지 뷰. 한 번에 한 페이지만 표시, 페이지 안은 카드 그리드로 가로 배치. 하단 이전/다음 페이저. */
+:root{
+  --bg:#EEF1F3; --paper:#FFFFFF; --side:#243C4B; --side-2:#2F4B5D;
+  --ink:#1F2E38; --ink-2:#4E6270; --muted:#8A98A2; --line:#D6DDE2; --line-2:#E7ECEF;
+  --brand:#395060; --brand-2:#4E6270; --accent:#E4BD57; --accent-2:#B48F2E; --accent-soft:#FBF3DC;
+  --ok:#2F7D5B; --ok-soft:#E3F2EA; --warn:#B26A1C; --warn-soft:#FBEEDC; --plan:#6B7684; --plan-soft:#EDF0F3;
+  --font-display:"Noto Serif KR",Georgia,serif;
+  --font-body:"Noto Sans KR",system-ui,sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,monospace;
+  --r:12px; --shadow:0 6px 24px rgba(15,30,46,.08);
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#111A20; --paper:#1B2830; --side:#0F181E; --side-2:#1A2830;
+  --ink:#E9EAEA; --ink-2:#B2BBC3; --muted:#768792; --line:#2E3E48; --line-2:#263540;
+  --brand:#7F98A8; --brand-2:#97A2A8; --accent:#E4BD57; --accent-2:#EFCB6B; --accent-soft:#2C2A1E;
+  --ok:#5CB58A; --ok-soft:#173127; --warn:#E0A94A; --warn-soft:#3A2A14; --plan:#9AA6B3; --plan-soft:#222D39;
+  --shadow:0 6px 24px rgba(0,0,0,.4); color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#111A20; --paper:#1B2830; --side:#0F181E; --side-2:#1A2830;
+  --ink:#E9EAEA; --ink-2:#B2BBC3; --muted:#768792; --line:#2E3E48; --line-2:#263540;
+  --brand:#7F98A8; --brand-2:#97A2A8; --accent:#E4BD57; --accent-2:#EFCB6B; --accent-soft:#2C2A1E;
+  --ok:#5CB58A; --ok-soft:#173127; --warn:#E0A94A; --warn-soft:#3A2A14; --plan:#9AA6B3; --plan-soft:#222D39;
+  --shadow:0 6px 24px rgba(0,0,0,.4); color-scheme:dark }
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:16px;line-height:1.7;letter-spacing:-.005em}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--side)}
+a{color:var(--brand-2)}
+h1,h2,h3{font-family:var(--font-display);font-weight:700;line-height:1.3;margin:0;text-wrap:balance;letter-spacing:-.01em}
+.eyebrow{font-family:var(--font-mono);font-size:.74rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-2)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+/* shell */
+.shell{display:grid;grid-template-columns:272px 1fr;min-height:100%}
+.scrim{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:11}
+.side{background:var(--side);color:#DCE4EC;position:sticky;top:env(safe-area-inset-top,0px);height:calc(100vh - env(safe-area-inset-top,0px));overflow:auto;display:flex;flex-direction:column;padding:1.3rem 0 1rem;padding-left:max(0px,env(safe-area-inset-left,0px))}
+.brand{display:flex;align-items:center;gap:.7rem;padding:0 1.2rem .9rem;border-bottom:1px solid rgba(255,255,255,.08);text-decoration:none;color:#F4F7FA}
+.brand .mark{width:60px;height:60px;border-radius:50%;object-fit:cover;background:#FFF;flex:none;box-shadow:0 0 0 2px var(--accent),0 4px 12px rgba(0,0,0,.25)}
+.brand b{display:block;font-family:var(--font-display);font-size:1.05rem;line-height:1.25}
+.brand small{display:block;font-size:.72rem;color:#9FB0C2;letter-spacing:.08em;font-family:var(--font-mono)}
+.sidenav{list-style:none;margin:.8rem 0 0;padding:0 .7rem;display:grid;gap:2px}
+.sidenav .grp{font-family:var(--font-mono);font-size:.68rem;letter-spacing:.14em;color:#7F93A8;padding:.9rem .6rem .3rem;text-transform:uppercase}
+.sidenav button{width:100%;text-align:left;background:none;border:0;color:#DCE4EC;font:inherit;font-size:.94rem;padding:.55rem .7rem;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:.6rem}
+.sidenav button .dot{width:9px;height:9px;border-radius:3px;background:var(--c,var(--accent));flex:none}
+.sidenav button .n{margin-left:auto;font-family:var(--font-mono);font-size:.72rem;color:#7F93A8}
+.sidenav button:hover{background:var(--side-2)}
+.sidenav button[aria-current="page"]{background:var(--side-2);color:#FFF;box-shadow:inset 3px 0 0 var(--accent)}
+.side .foot{margin-top:auto;padding:1rem 1.2rem 0;font-size:.76rem;color:#7F93A8;border-top:1px solid rgba(255,255,255,.08)}
+.side .foot b{color:#C9D3DD;font-weight:500}
+
+.main{min-width:0;display:flex;flex-direction:column}
+.topbar{display:none}
+.page{display:none;flex:1;padding-block:2rem 2.4rem;padding-left:max(28px,env(safe-area-inset-left,0px));padding-right:max(28px,env(safe-area-inset-right,0px))}
+.page.active{display:block}
+.inner{max-width:1240px;margin:0 auto}
+.crumb{font-family:var(--font-mono);font-size:.74rem;color:var(--muted);display:flex;gap:.5rem;align-items:center;margin-bottom:1rem}
+.crumb .sep{opacity:.5}
+.phead{display:flex;align-items:flex-end;justify-content:space-between;gap:1.5rem;flex-wrap:wrap;padding-bottom:1.2rem;border-bottom:2px solid var(--line);margin-bottom:1.6rem}
+.phead h1{font-size:clamp(1.6rem,2.6vw,2.15rem);display:flex;align-items:center;gap:.7rem}
+.phead h1 .bar{width:8px;height:1.4em;border-radius:3px;background:var(--c,var(--accent));flex:none}
+.phead p{margin:.45rem 0 0;color:var(--ink-2);max-width:68ch;font-size:1rem}
+.counts{display:flex;gap:.6rem;flex-wrap:wrap}
+.count{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:.5rem .9rem;min-width:92px;text-align:center}
+.count b{display:block;font-family:var(--font-display);font-size:1.35rem;color:var(--brand);font-variant-numeric:tabular-nums;line-height:1.1}
+.count span{font-size:.74rem;color:var(--muted)}
+
+/* buttons — CandyAflex 3D 투컬러 (버튼 킷과 동일 규격) */
+.btn{--p:var(--brand);--s:var(--accent);--s-deep:var(--accent-2);--depth:4px;--fg:#FFFFFF;
+  position:relative;display:inline-flex;align-items:center;justify-content:center;gap:.4rem;font:inherit;font-weight:700;font-size:.88rem;color:var(--fg);text-decoration:none;cursor:pointer;user-select:none;
+  padding:.55rem 1.05rem;border-radius:11px;border:0;min-height:40px;white-space:nowrap;
+  background:linear-gradient(135deg,color-mix(in srgb,var(--p) 78%,white) 0%,var(--p) 45%,color-mix(in srgb,var(--p) 85%,black) 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.45),inset 0 -2px 4px rgba(0,0,0,.18),0 var(--depth) 0 var(--s),0 calc(var(--depth) + 1px) 0 var(--s-deep),0 calc(var(--depth) + 8px) 14px rgba(15,25,35,.22);
+  transition:transform .09s ease,box-shadow .09s ease,filter .12s ease}
+.btn::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:radial-gradient(60% 55% at 22% 0%,rgba(255,255,255,.4),rgba(255,255,255,0) 70%)}
+.btn:hover{transform:translateY(-2px);filter:brightness(1.06);box-shadow:inset 0 1px 0 rgba(255,255,255,.55),inset 0 -2px 4px rgba(0,0,0,.18),0 calc(var(--depth) + 2px) 0 var(--s),0 calc(var(--depth) + 3px) 0 var(--s-deep),0 calc(var(--depth) + 14px) 20px rgba(15,25,35,.28)}
+.btn:active{transform:translateY(calc(var(--depth) - 1px));filter:brightness(.92);box-shadow:inset 0 3px 6px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.1),0 1px 0 var(--s),0 2px 0 var(--s-deep),0 3px 6px rgba(15,25,35,.2)}
+.btn-primary,.btn-navy{--p:var(--brand)}
+.btn-gold{--p:var(--accent);--fg:#1F2E38;--s:var(--brand);--s-deep:var(--side)}
+.btn-outline{--fg:#FFF;background:transparent;box-shadow:inset 0 0 0 2px rgba(255,255,255,.6),0 var(--depth) 0 var(--s),0 calc(var(--depth) + 1px) 0 var(--s-deep)}
+.btn-outline::before{display:none}
+.btn-outline:hover{box-shadow:inset 0 0 0 2px #FFF,0 calc(var(--depth) + 2px) 0 var(--s),0 calc(var(--depth) + 3px) 0 var(--s-deep)}
+.btn.soon{background:var(--plan-soft);color:var(--plan);box-shadow:inset 0 0 0 1px var(--line);cursor:not-allowed;transform:none;filter:none}
+.btn.soon::before{display:none}
+.cat .btn-primary{--p:var(--c,var(--brand))}
+/* AI 크리에이터: 윗면 크림 + 옆면 레드 (반전) */
+#pg-creator .btn-primary{--p:#F6EFD7;--fg:#1F2E38;--s:#E73724;--s-deep:#A8261A}
+@media (prefers-reduced-motion:reduce){.btn{transition:none}}
+
+/* home */
+.hero{background:linear-gradient(135deg,#395060 0%,#243C4B 100%);color:#F4F7FA;border-radius:16px;padding:2.4rem 2.4rem 2.2rem;display:grid;grid-template-columns:1.4fr 1fr;gap:2rem;align-items:center;position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;right:-80px;bottom:-120px;width:360px;height:360px;border-radius:50%;background:radial-gradient(circle,rgba(201,162,39,.35),transparent 70%)}
+.hero h1{font-size:clamp(1.7rem,3vw,2.5rem);color:#FFF}
+.hero h1 em{font-style:normal;color:var(--accent)}
+.hero p{color:#CBD6E2;max-width:56ch;margin:.8rem 0 0;font-size:1.02rem}
+.hero .actions{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1.3rem}
+
+.kpi{display:grid;grid-template-columns:repeat(2,1fr);gap:.7rem;position:relative}
+.kpi div{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:.8rem 1rem}
+.kpi b{display:block;font-family:var(--font-display);font-size:1.8rem;color:var(--accent);font-variant-numeric:tabular-nums;line-height:1.1}
+.kpi span{font-size:.8rem;color:#CBD6E2}
+.h2{font-size:1.3rem;margin:2rem 0 .9rem;display:flex;align-items:center;gap:.6rem}
+.h2 .eyebrow{margin-left:.2rem}
+.flow{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:.8rem;align-items:stretch}
+.flow .box{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:1rem 1.1rem}
+.flow .box.core{background:var(--brand);color:#FFF;border-color:var(--brand)}
+.flow h3{font-size:1.05rem;margin-bottom:.3rem}
+.flow p{margin:0;font-size:.88rem;color:var(--ink-2)} .flow .core p{color:#CBD6E2}
+.flow .arr{display:grid;place-items:center;color:var(--accent-2);font-size:1.5rem}
+.map{display:grid;grid-template-columns:repeat(4,1fr);gap:.9rem}
+.mapc{background:var(--paper);border:1px solid var(--line);border-top:4px solid var(--c);border-radius:var(--r);padding:1rem 1.1rem;text-align:left;font:inherit;color:var(--ink);cursor:pointer;display:grid;gap:.35rem;align-content:start;transition:transform .12s,box-shadow .12s}
+.mapc:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.mapc h3{font-size:1.05rem}
+.mapc p{margin:0;font-size:.85rem;color:var(--ink-2)}
+.mapc .cnt{font-family:var(--font-mono);font-size:.72rem;color:var(--muted);margin-top:.2rem}
+.legend{display:flex;gap:1rem;flex-wrap:wrap;font-size:.84rem;color:var(--ink-2);margin-top:.9rem;align-items:center}
+
+/* agent cards */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:1rem}
+.agent{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:1.15rem 1.2rem 1.05rem;display:grid;gap:.7rem;align-content:start;min-width:0;border-left:4px solid var(--c,var(--accent))}
+.agent .top{display:flex;align-items:flex-start;justify-content:space-between;gap:.6rem}
+.agent h3{font-size:1.1rem;font-family:var(--font-body);font-weight:700;letter-spacing:-.01em}
+.pill{font-family:var(--font-mono);font-size:.68rem;padding:.2rem .55rem;border-radius:999px;white-space:nowrap;flex:none;font-weight:500}
+.pill.live{color:var(--ok);background:var(--ok-soft)} .pill.link{color:var(--warn);background:var(--warn-soft)} .pill.plan{color:var(--plan);background:var(--plan-soft)}
+.agent .role{margin:0;font-size:.92rem;color:var(--ink-2);line-height:1.6}
+.meta{display:flex;flex-wrap:wrap;gap:.35rem}
+.meta span{font-size:.75rem;background:var(--line-2);border-radius:5px;padding:.1rem .5rem;color:var(--ink-2)}
+.meta span.type{background:var(--accent-soft);color:var(--accent-2);font-weight:500}
+.items{margin:0;padding:0;list-style:none;display:grid;gap:.22rem;border-top:1px dashed var(--line);padding-top:.6rem}
+.items li{display:flex;gap:.5rem;font-size:.88rem;line-height:1.55;color:var(--ink)}
+.items li::before{content:"";flex:none;width:5px;height:5px;border-radius:50%;background:var(--c,var(--accent));margin-top:.62rem}
+.agent .res{display:flex;flex-wrap:wrap;gap:.45rem;margin-top:.1rem}
+.agent .note{font-size:.78rem;color:var(--muted);margin:0}
+
+/* tools, lib */
+.tool{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:1.05rem 1.15rem;display:grid;gap:.4rem;align-content:start}
+.tool h3{font-size:1.05rem;font-family:var(--font-body);font-weight:700}
+.tool p{margin:0;font-size:.88rem;color:var(--ink-2)}
+.tool .btn{justify-self:start;margin-top:.3rem}
+.libg{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:1rem 1.15rem}
+.libg h3{font-size:1rem;font-family:var(--font-body);font-weight:700;margin-bottom:.5rem;padding-bottom:.45rem;border-bottom:2px solid var(--accent)}
+.libg ul{margin:0;padding:0;list-style:none;display:grid;gap:.35rem}
+.libg a{font-size:.9rem;text-decoration:none;color:var(--ink);font-weight:500}
+.libg a:hover{color:var(--brand-2);text-decoration:underline}
+.libg small{display:block;color:var(--muted);font-size:.76rem}
+
+/* about */
+.about{display:grid;grid-template-columns:1.3fr 1fr;gap:1.5rem}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:1.4rem 1.5rem}
+.card p{color:var(--ink-2);margin:.4rem 0 0}
+.card ul{margin:.8rem 0 0;padding-left:1.1rem;color:var(--ink-2);font-size:.93rem;display:grid;gap:.25rem}
+.books{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:1rem}
+.books span{font-size:.8rem;border:1px solid var(--line);border-radius:6px;padding:.15rem .55rem;color:var(--ink-2);background:var(--line-2)}
+.contact{display:grid;gap:.55rem}
+.contact .row{display:flex;justify-content:space-between;gap:.6rem;align-items:center;font-size:.92rem;flex-wrap:wrap;padding:.45rem 0;border-bottom:1px solid var(--line-2)}
+.contact .row b{color:var(--brand);font-weight:600;min-width:5.5em}
+.contact .row span{font-family:var(--font-mono);font-size:.84rem;user-select:all;word-break:break-all}
+.copy{font:inherit;font-size:.76rem;background:var(--accent);color:#0F1E2E;border:0;border-radius:6px;padding:.2rem .55rem;cursor:pointer}
+
+/* pager */
+.pager{display:flex;justify-content:space-between;gap:1rem;margin-top:2.2rem;padding-top:1.2rem;border-top:1px solid var(--line)}
+.pager button{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:.7rem 1rem;font:inherit;color:var(--ink);cursor:pointer;display:grid;text-align:left;min-width:0;max-width:48%}
+.pager button:hover{border-color:var(--brand)}
+.pager button small{font-family:var(--font-mono);font-size:.7rem;color:var(--muted);letter-spacing:.1em}
+.pager button b{font-weight:500;font-size:.92rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pager .next{text-align:right;margin-left:auto}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--side);color:#FFF;padding:.6rem 1rem;border-radius:10px;border:1px solid var(--accent);font-size:.9rem;z-index:20}
+
+@media (max-width:1100px){.map{grid-template-columns:repeat(2,1fr)}.hero{grid-template-columns:1fr}}
+@media (max-width:900px){
+  .shell{grid-template-columns:1fr}
+  .side{position:fixed;left:0;top:env(safe-area-inset-top,0px);bottom:0;width:min(300px,85vw);z-index:12;transform:translateX(-100%);transition:transform .2s;box-shadow:var(--shadow)}
+  .side.open{transform:none}
+  .topbar{display:flex;align-items:center;gap:.8rem;position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--side);color:#FFF;padding:.7rem max(16px,env(safe-area-inset-right,0px)) .7rem max(16px,env(safe-area-inset-left,0px));font-family:var(--font-display);font-weight:700}
+  .topbar .tlogo{width:36px;height:36px;border-radius:50%;object-fit:cover;background:#FFF;box-shadow:0 0 0 2px var(--accent)}
+  .topbar button{background:none;border:1px solid rgba(255,255,255,.4);color:#FFF;border-radius:8px;padding:.35rem .7rem;font:inherit;cursor:pointer}
+  .page{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:1.4rem 2rem}
+  .flow{grid-template-columns:1fr}.flow .arr{transform:rotate(90deg)}
+  .about{grid-template-columns:1fr}.map{grid-template-columns:1fr}
+  .scrim{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:11;display:none}.scrim.show{display:block}
+}
+
+/* Original transparent 400x200 logo; only transparent outer margins are masked. */
+.brand .mark-frame{width:64px;height:64px;position:relative;overflow:hidden;border-radius:50%;background:#fff;flex:none;box-shadow:0 0 0 2px var(--accent),0 4px 12px rgba(0,0,0,.25)}
+.brand .mark{position:absolute;left:-26.5px;top:2px;width:120px;height:60px;max-width:none;border-radius:0;object-fit:contain;background:transparent;box-shadow:none}
+.topbar .tlogo-frame{width:40px;height:40px;position:relative;overflow:hidden;border-radius:50%;background:#fff;flex:none;box-shadow:0 0 0 2px var(--accent)}
+.topbar .tlogo{position:absolute;left:-16.5625px;top:1.25px;width:75px;height:37.5px;max-width:none;border-radius:0;object-fit:contain;background:transparent;box-shadow:none}
+</style>
+
+<div class="shell">
+  <aside class="side" id="side">
+    <a class="brand" href="#home" data-go="home"><span class="mark-frame"><img class="mark" src="assets/candyaflex-logo.png" alt="CandyAflex AI 디지털 융합 아카데미 로고"></span><span><b>CandyAflex 아카데미</b><small>AI · DIGITAL · CANVA</small></span></a>
+    <ul class="sidenav" id="sidenav"></ul>
+    <div class="foot"><b>📘 CandyAflex AI·Digital Instructor</b><br>손애희 · skkk3927@naver.com<br>blog.naver.com/wholebodyegoodballro</div>
+  </aside>
+  <div class="scrim" id="scrim"></div>
+  <main class="main">
+    <div class="topbar"><button id="hamb" aria-controls="side" aria-expanded="false">☰ 메뉴</button><span class="tlogo-frame"><img class="tlogo" src="assets/candyaflex-logo.png" alt="CandyAflex 로고"></span><span>CandyAflex 아카데미</span></div>
+    <div id="pages"></div>
+  </main>
+</div>
+
+<script>
+const A = id => `https://claude.ai/code/artifact/${id}`;
+// st: live(링크 있음) / link(자료 있음, 링크 미연결) / plan(기획·진행)
+const CATS = [
+ { id:"story", color:"#D9607A", name:"동화책·스토리텔링", tag:"Storytelling",
+   desc:"동화작가로서의 창작과 AI 스토리텔링 교육. 출간 동화 5권(Amazon KDP 포함), 고정 캐릭터 동화 시리즈, 이야기를 스토리보드·프롬프트로 바꾸는 웹앱까지 창작 과정을 에이전트로 묶었습니다.",
+   agents:[
+    { t:"캔디A AI 스토리 디렉터", st:"link", role:"이야기 아이디어를 3~10개 장면 스토리보드와 Flow·Midjourney·Kling·HeyGen용 한영 프롬프트, Suno 음악 스타일·가사로 변환", aud:["동화 작가","영상 제작자","교육생"], type:"웹앱 (Render 배포)",
+      items:["4개 메뉴, 장면별 아코디언 결과","복사 가능한 도구별 제작 지시서 제공 (미디어 직접 생성 없음)","GitHub 연결 후 Render 배포 완료"], res:[["배포 주소 확인 필요","","soon"]], note:"Render 배포 URL을 받으면 바로 연결합니다." },
+    { t:"하윤·치카 동화 시리즈", st:"plan", role:"하윤·치카·까망이·별치아 고정 캐릭터로 7장 구성 한국어 어린이 동화를 만들고 음성·이미지·이야기를 연결", aud:["어린이","부모","동화 수업"], type:"창작 프로젝트",
+      items:["고정 캐릭터 ID로 일관된 그림","ElevenLabs V3 음성 연결 워크플로","7장 구성 이야기 설계"], res:[["동화 공개 페이지","","soon"]] },
+    { t:"출간 동화·컬러링북 서가", st:"link", role:"출간 저작물 5권과 Amazon KDP 출판 경험을 소개하고 AI 동화책 출판 과정을 안내", aud:["예비 작가","시니어 창작 수업"], type:"포트폴리오",
+      items:["《플로라와 마법의 꽃잎》 《버섯 숲의 인생 이야기》","《바다 동물 컬러링북》 《시간을 파는 상점》(어른을 위한 동화)","공저 《우리는 디지털 튜터다》","주제: 자연·생명·공존·성찰·회복"], res:[["서가 페이지 연결 예정","","soon"]], note:"구매·열람 링크를 주시면 연결합니다." },
+    { t:"AI 동화책 만들기 수업 (중장년층)", st:"live", role:"50~60대 중장년 수강생이 자기 인생 이야기·손주에게 들려줄 이야기를 AI 그림동화 한 권으로 완성하는 실습 과정 — 10회기 교재 통합본", aud:["중장년층 50~60대","평생교육기관","복지관"], type:"교재 통합본 웹앱",
+      items:["1단계 이야기 씨앗 찾기 — 내 삶의 장면 3개 고르기","2단계 ChatGPT·Gemini로 7장 구성 줄거리 만들기","3단계 장면별 삽화 프롬프트 — 색연필·동화책 삽화 스타일, 인물 일관성 유지 (7장 샘플 포함)","4단계 Canva 전자책 조판 → PDF·전자책 완성, 낭독 음성(ElevenLabs) 선택 → 반 합본 전자책","슬라이드 구성표 88장 · 화면 캡처 목록 34장 · 동의서 · 강사 노트 · 마스터 프롬프트"], res:[["교재 열기","https://claude.ai/artifact/LSDtxEy3TJ5LfebvJwdrQB","gold"],["이야기 씨앗 카드","https://claude.ai/artifact/VgfeDLVjWKHAixyT151sUR","navy"]], note:"10회기(회당 2.5시간, 8회기 압축 가능) 기준. 캡처 슬라이드 PPTX는 B표대로 촬영 후 마스터 프롬프트로 생성합니다." },
+    { t:"미드저니 입문→숙련 교재", st:"plan", role:"가입부터 화면 구성, 프롬프트 작성, 파라미터, 캐릭터 일관성, 동화·시화 삽화 제작까지 실제 화면 캡처와 빨간 네모 표기로 배우는 Midjourney 교재", aud:["초보자","중급·숙련자","동화·시화 삽화 제작자"], type:"교육 슬라이드 (제작 중)",
+      items:["1부 입문 — 가입·구독·로그인, 웹 UI 구조(Create·Explore·Organize·설정)","2부 기초 — 프롬프트 5요소, 이미지 4장 생성, U/V·Vary·Zoom·Pan","3부 중급 — 파라미터(--ar --s --c --style --no), 스타일 레퍼런스(--sref), 무드보드","4부 숙련 — 캐릭터 레퍼런스(--cref/omni), 에디터·인페인팅, 시리즈 삽화 일관성","5부 실전 — 동화책 7장 삽화 · 시화집 삽화 제작 워크플로"], res:[["교재 제작 중","","soon"]], note:"선생님 계정 화면 캡처 후 완성. 캡처 전까지는 공개 화면·설명 도해로 구성합니다." },
+    { t:"AI 활용 시화집 만들기 수업 (중장년층)", st:"live", role:"중장년 수강생이 자작시 또는 좋아하는 시를 AI 이미지와 함께 시화로 꾸며 한 권의 시화집으로 엮는 과정", aud:["중장년층 50~60대","문해·인문 교실","복지관"], type:"교육 과정 (설계 중)",
+      items:["1단계 시 쓰기 — 주제 12선(계절·고향·가족·일·몸과 나이듦·음식·사물·장소·상실과 위로·신앙과 감사·세상과 이웃·내일의 나) 중 택 1, AI는 퇴고 도우미로만 사용","2단계 시의 심상을 이미지 프롬프트로 바꾸기 (수묵·수채·색연필 스타일)","3단계 Canva로 시화 한 장 완성 — 큰 글씨, 시니어 가독성 기준","4단계 시화집 묶기 → PDF·전자책, 전시용 A4 출력","저작권: 타인의 시는 저작권 만료 작품 또는 허락받은 작품만 사용"], res:[["삽화 프롬프트 카드","https://claude.ai/artifact/1pQGfWoFtFcuLWRWdHYjnT","gold"],["교육 제안서","https://claude.ai/artifact/1E8akeQVKNU24VaPbLWSgG","navy"]], note:"AI 동화책 수업과 공통 단계(이미지 프롬프트·Canva 조판)를 공유해 연속 과정으로 운영 가능합니다." }
+   ]},
+ { id:"creator", color:"#E73724", name:"AI 크리에이터 (영상·음악·아트)", tag:"AI Creator",
+   desc:"경남 AI크리에이터 100up 활동, AI 아트전 참여·수상, 지역 브랜딩 영상과 광고 제작. 실제 제작 과정을 그대로 교재와 작업대로 만들었습니다.",
+   agents:[
+    { t:"글빛 프롬프트 공방", st:"live", role:"AI 영상 제작용 프롬프트 빌더 — 샷 계산, 레퍼런스, 샷 리스트, 장르별 예시, 용어 사전, Suno BGM", aud:["AI 영상 입문·중급","1인 크리에이터"], type:"웹앱",
+      items:["시작하기 다섯 걸음과 샷 계산기","프롬프트 빌더와 샷 리스트","일관성 관리·전문 용어 사전"], res:[["공방 열기",A("589b6bef-187d-4e7b-88dd-22817531132e"),"gold"]] },
+    { t:"삼딸이 스토리보드 작업대", st:"live", role:"3분 영상 24컷 스토리보드와 Kling·Flow 프롬프트(한/영)를 복사해 쓰는 제작 작업대 (삼랑진 딸기 시간여행)", aud:["AI 영상 제작자","지역 브랜딩"], type:"웹앱 + 스토리보드",
+      items:["작업 순서·도구별 형식 차이","나레이션·자막 대본 24컷","기·승·전·결 씬, Suno 배경음악","삼딸이 캐릭터 저작권 등록 검토 중"], res:[["작업대 열기",A("ec811a5b-9a5f-4b51-8161-1f6d1be1abf3"),"gold"],["최종 스토리보드",A("10e54a0c-9358-44fe-ab6e-537c6f216d06"),"navy"]] },
+    { t:"나만의 음악 (Suno 교본)", st:"live", role:"Suno와 Gemini로 작사·작곡·앨범 썸네일·뮤직비디오 장면까지 완성하는 노래 교본", aud:["시니어","배움터 수강생","사회복지사"], type:"교재 웹앱 (입장 코드)",
+      items:["첫 AI 노래 만들기, 노래 재료 4칸","노래 느낌 114가지·스타일 조합기","앨범 썸네일·Flow 뮤직비디오","안전 수칙 4가지"], res:[["교본 열기",A("f4b4cc1d-f7eb-4b36-966e-1e379a8f06d9"),"gold"]] },
+    { t:"밀양 아리랑의 현대적 해석", st:"plan", role:"2026 경남 AI크리에이터 100up 팀 프로젝트 — 3분 이내 영상 제작 기획·답사·제작", aud:["AI크리에이터 팀"], type:"프로젝트 기획서",
+      items:["제출 기획서 v3","밀양아트센터 사전 답사·자료 수집","영상 제작 진행 중"], res:[["기획서 v3",A("2fc7a7ab-a442-41dc-b77c-0e5d365cc275"),"gold"],["완성 영상","","soon"]] },
+    { t:"카페 아띠랑 AI 광고", st:"link", role:"Google Flow·Veo로 만든 10초 16:9 멀티모달 광고 — 제품·공간 중심, 느린 카메라, 무문자 원칙", aud:["40~80대 지역 고객","소상공인 광고 수업 사례"], type:"포트폴리오 (제출 완료)",
+      items:["제한된 객체 수, 무워터마크","제품과 공간 경험 강조","소상공인 숏폼 교육 사례로 활용"], res:[["영상 링크 연결 예정","","soon"]] },
+    { t:"AI 아트 작품전", st:"link", role:"생성형 AI 아트 창작, 단체 작품전 참가(롯데 송파 AI 아트전)와 수상 이력을 소개", aud:["AI 아트 수강생","전시 기획"], type:"포트폴리오",
+      items:["AI 아티스트 수상 경력","색연필·동화책 삽화·아이소메트릭 인포그래픽 스타일","Midjourney·Flow·Kling·ImageFX 등 도구"], res:[["작품 갤러리 연결 예정","","soon"]] }
+   ]},
+ { id:"baeumteo", color:"#228DC5", name:"AI 디지털배움터", tag:"Digital Learning Center",
+   desc:"40~80대 시민을 위한 생성형 AI·스마트폰·로봇 교육과 현장 출강 기록. 큰 글씨, 한 화면에 한 과제, 따라 하기 원칙으로 설계합니다.",
+   agents:[
+    { t:"AI디지털 배움터 온라인 교실", st:"live", role:"40~50대 생성형 AI 실무·생활 활용 17회차 LMS — 회차 카드, 슬라이드, 퀴즈, 체크리스트, 출석", aud:["40~50대 시민","디지털 초보자"], type:"교재 웹앱",
+      items:["챗GPT 첫 대화 · AI 도구 선택 · NotebookLM · Canva 포스터","홍보 콘텐츠 · 맞춤 AI 비서 · Suno · 프로젝트 발표","고급 프롬프트 · 설문 자동 생성 · 반복 업무 · 웹앱 만들기","SNS 운영 · AI 이미지·이모티콘 · 디지털 안전·재난 대비"], res:[["교실 열기",A("2fcb7a95-7c31-4ef2-b6f0-f913b6f5752f"),"gold"]] },
+    { t:"캔디A · 쉬운 AI 배움터", st:"live", role:"디지털 초보 시니어가 AI를 천천히 하나씩 배우고 쉬운 질문을 연습하는 학습 안내 사이트 — AI 대화는 디어로 디지털배움터와 연결", aud:["시니어","디지털 초보자","배움터 수강생"], type:"학습 안내 웹사이트",
+      items:["AI 시작하기 · 질문 연습하기","다시 떠올리기(복습) · 안전하게 이용하기","도움말, 글자 크기 2단 조절(기본·크게)","\"오늘 배운 한 가지를 소중한 사람에게\" — 배워서 남주자"], res:[["배움터 열기","https://candya-senior-ai-learning.candyaflex.chatgpt.site","gold"]], note:"디어로 원본 서비스는 시범 운영 중이며 사용량·운영 정책이 바뀔 수 있습니다 (사이트 표기 확인일 2026.10.15)." },
+    { t:"AI 실습 도우미", st:"live", role:"코코아팹 실습 도구 허브와 '인공지능 첫 걸음' 4단계 가이드, 4주 실천표", aud:["시니어","AI 입문자"], type:"웹앱",
+      items:["AI 역할 나누기 · AI 이어 쓰기","내 소개와 확인 습관","4주 실천표"], res:[["도우미 열기",A("71936f5c-9fca-4787-9982-9c66d1850439"),"gold"]] },
+    { t:"로보독 빅아이 축제 부스", st:"live", role:"사회복지관 축제 부스 50분×3 수업(유아·청소년·어르신) 교안", aud:["유아+보호자","청소년","어르신"], type:"교안",
+      items:["로봇 강아지와 친구 되기 / 훈련시키기 / 말로 부르기","왕초보 강사 준비·돌발상황 체크리스트"], res:[["교안",A("d6b4b4aa-2399-470f-a445-a31061a4acde"),"gold"]] },
+    { t:"이미지 생성과 프롬프트 — 축하·사과 카드와 편지지", st:"live", role:"제미나이로 축하·사과 글을 쓰고, 글자 없는 카드·편지지 그림을 만들어 카톡으로 보내는 2시간 실습 슬라이드 (26장)", aud:["시니어","배움터 수강생","디지털 초보자"], type:"강의 슬라이드",
+      items:["글 부탁 다섯 손가락: 역할·상황·목적·조건·결과","그림 부탁 다섯 손가락: 주제·분위기·색감·그림체·모양","축하 글 10 · 사과 글 10 · 카드 그림 10 · 편지지 10","보내기 전 점검 4가지 — 내 마음 한 줄 더하기"], res:[["슬라이드 열기",A("bfcbf50f-bc3f-4ba6-b839-a288cc93d180"),"gold"]], note:"원본: Canva 1권 본교재 88장 + 2권 부록 「프롬프트 레시피 40」 49장." },
+    { t:"시니어 AI·스마트폰 입문 시리즈", st:"link", role:"70~80대를 위한 생성형 AI 입문(ChatGPT·뤼튼·빅스비·Gemini), 카카오톡·영상통화, 스마트폰 기초", aud:["70~80대","노인복지관"], type:"교재 (PPT)",
+      items:["생성형 AI 입문 2.5시간 — 화면 밝기·글자 크기·뒤로 가기 보조","\"세상과 통하는 즐거운 스마트폰 대화 첫걸음\" 2시간 (1:1 대화·단체방·영상통화)","오늘·내일·7일 뒤 반복 연습"], res:[["교재 연결 예정","","soon"]] },
+    { t:"시니어 그림일기 교재", st:"link", role:"사진을 올리면 따뜻한 한국식 색연필 그림일기로 바꾸는 프롬프트 교재 — 사계절 20주제·일기 프롬프트 10개", aud:["시니어","복지관 컴퓨터실 수업"], type:"교재 (슬라이드)",
+      items:["바꿀 수 있는 항목은 [ ]로 표시","진해서부노인종합복지관 15명 수업 기록","동화책 만들기 수업과 연계"], res:[["교재 연결 예정","","soon"]] },
+    { t:"시니어 여행계획 AI", st:"link", role:"페르소나·육하원칙·구조화 프롬프트로 여행 계획을 세우고 인포그래픽으로 공유하는 2.5~3시간 과정", aud:["50~70대"], type:"교재 + 여행안",
+      items:["경남 단풍 당일치기 드라이브 코스 (걷기 최소화)","의령 한우산 별천지 1박 여행안","16:9 실사 인포그래픽"], res:[["교재 연결 예정","","soon"]] },
+    { t:"현장 출강 기록", st:"plan", role:"기관별 출강 과정을 기록하고 재사용 가능한 커리큘럼으로 정리", aud:["기관 담당자","강사 동료"], type:"출강 포트폴리오",
+      items:["경남 중부권 돌봄노동자센터 — 8회 (50~60대)","가음정 꿈샘 \"질문만 잘해도 검색 끝!\" 6시간 + 생성형 AI 동아리","진해시니어클럽 배리어프리 교육 — 매주 수 3시간","경남로봇랜드 Gemini·NotebookLM 교육","경남 AI 디지털배움터 강사 역량강화(디지털 배지)"], res:[["출강 페이지 제작 예정","","soon"]] }
+   ]},
+ { id:"welfare", color:"#17605F", name:"사회복지 교육", tag:"Social Welfare",
+   desc:"사회복지시설 종사자·주거복지사를 위한 AI·디지털 역량 강화. 상담기록 자동화, 시각 콘텐츠, 업무 자동화를 현장 서식과 개인정보 원칙에 맞춰 설계합니다.",
+   agents:[
+    { t:"AI 상담기록 비교 실습 180분", st:"live", role:"3대 AI 모델 블라인드 비교와 프롬프트 5요소로 우리 기관 상담기록에 적용", aud:["사회복지 기관 종사자"], type:"강의 슬라이드",
+      items:["2026 AI 지형과 3대 모델 비교","안전 원칙 — 입력 금지 정보와 사람의 역할","실습 1·2·3: 사례 → 블라인드 비교 → 기관 적용"], res:[["슬라이드 열기",A("b55c33b9-0304-42c8-8baf-bd3c230aac2a"),"gold"]] },
+    { t:"주거복지 상담기록 자동화", st:"link", role:"FNRAP·SOAP 프레임으로 상담 메모를 기관 서식에 맞게 구조화 — 7종 사례관리 서식 자동화", aud:["주거복지사","주택관리공단","사례관리 담당자"], type:"교재 (100슬라이드 PPTX)",
+      items:["40% 강의 / 60% 실습","개인정보 비식별화 원칙","지원 여부·개입 방향은 실무자 판단","블로그·인포그래픽 콘텐츠 연계"], res:[["교재 연결 예정","","soon"]] },
+    { t:"시각 콘텐츠 디자인 ①②", st:"live", role:"복지기관 홍보물의 시각 메시지 설계(카드뉴스)와 행사·홍보 포스터 제작·QR 배포", aud:["사회복지시설 종사자"], type:"강의 슬라이드 2종",
+      items:["디자인 기본 원리 · AI 생성 문구 카드뉴스 · 업스케일링 · 저작권","Canva 템플릿 포스터 · 단축URL·QR"], res:[["디자인 기초",A("8822a941-f79f-4112-9d7b-71c7bb30d335"),"gold"],["포스터 실습",A("3eb26ee7-fff6-4039-9768-e3f006e5967c"),"gold"]] },
+    { t:"사회복지사 AI 90분 특강", st:"link", role:"사회복지사 대상 생성형 AI 업무 활용 90분 교재", aud:["사회복지사"], type:"교재 (docx)",
+      items:["ChatGPT 업무 자동화 이해","전문용어 최소화, 실습 위주"], res:[["교재 연결 예정","","soon"]] },
+    { t:"디지털 정보격차 근거 자료", st:"link", role:"AI 교육 제안서용 통계 — 참여자·비참여자 직무능력 변화, 시니어 격차, 경남 지역 통계", aud:["기관장","제안서 작성"], type:"조사 자료",
+      items:["NIA 디지털 정보격차 실태조사","정책브리핑 보도자료"], res:[["자료 연결 예정","","soon"]] }
+   ]},
+ { id:"canva", color:"#7236C9", name:"캔바·디자인 교육", tag:"Canva & Design",
+   desc:"Canva 1·2급 전문강사·지국장, 투닝 웹툰 강사 과정에서 검증된 디자인 교육. 비전공자도 바로 결과물을 만드는 실습 구성과 브랜드 디자인 시스템입니다.",
+   agents:[
+    { t:"Canva 디자인 원리·포스터·QR", st:"live", role:"디자인 기본 원리부터 템플릿 포스터, 업스케일링, QR 배포까지 (사회복지교육 공유 교재)", aud:["Canva 입문","홍보 담당"], type:"강의 슬라이드",
+      items:["여백·정렬·대비·반복","AI 생성 문구 카드뉴스","bitly 단축URL·QR"], res:[["디자인 기초",A("8822a941-f79f-4112-9d7b-71c7bb30d335"),"gold"],["포스터 실습",A("3eb26ee7-fff6-4039-9768-e3f006e5967c"),"gold"]] },
+    { t:"Canva 카드뉴스·전자책 워크숍", st:"plan", role:"Gemini·Canva로 카드뉴스와 e-book·뉴스레터를 기획·제작·배포", aud:["중급","SNS 담당"], type:"교재 (제작 중)",
+      items:["4:5·1:1 카드뉴스","e-book 레이아웃","Canva 영상 편집·배포"], res:[["교재 제작 중","","soon"]] },
+    { t:"투닝 웹툰·홍보 웹툰", st:"link", role:"투닝(Tooning)으로 기관 홍보 4컷 웹툰과 캐릭터 제작", aud:["중급","홍보 담당"], type:"교육 과정 + 제작 사례",
+      items:["가음정 꿈샘 홍보 4컷 웹툰 (2×2, 강사 캐릭터 포함)","웹툰 스토리 구성 → 장면 제작"], res:[["교재 연결 예정","","soon"]] },
+    { t:"3D 버튼 프롬프트 랩 (디자인 시스템)", st:"live", role:"CandyAflex 브랜드 버튼 세트, 시니어 AAA 대비 기준, UI 킷, Midjourney·Firefly 프롬프트", aud:["디자인 학습자","교재 제작"], type:"웹앱",
+      items:["브랜드 컬러 네이비·골드·크림·스카이","시니어 버튼: 18pt+, 48px 터치, 7:1 대비","CSS 구현과 WCAG 검증"], res:[["랩 열기",A("dd7d3977-02bc-46b5-995b-f5396d27c2ba"),"gold"]] },
+    { t:"블로그 마케팅·스마트폰 사진", st:"link", role:"네이버 파워블로거 경험 기반 블로그 마케팅과 스마트폰 사진 강의, 인스타 카드 제작", aud:["소상공인","기관 홍보"], type:"교육 과정",
+      items:["인스타그램 카드 1080×1080 제작","블로그 글·썸네일·인포그래픽"], res:[["교재 연결 예정","","soon"]] }
+   ]},
+ { id:"auto", color:"#B8912F", name:"업무 자동화·Claude 스킬", tag:"Automation & Skills",
+   desc:"반복 업무를 한 번의 설정으로 줄이는 자동화 에이전트. 명단 → 수료증, 데이터 → 목적별 보고서, 설문 → 통보까지 Claude 스킬과 노코드로 구현했습니다.",
+   agents:[
+    { t:"수료증 일괄 생성 스킬", st:"link", role:"첨부 양식 디자인을 유지한 채 명단(성명·부서)과 교육명·수료일·기관명을 넣으면 PDF 수료증을 인원 수만큼 생성", aud:["교육기관","강사"], type:"Claude 스킬",
+      items:["발급번호 연도-순번 자동 (2026-001)","제목·본문 「 」 문구 자동 치환","skill-creator로 제작"], res:[["스킬 공개 예정","","soon"]] },
+    { t:"목적별 보고서 생성 스킬", st:"link", role:"데이터를 받으면 먼저 목적을 묻고 카드뉴스형·경영진 보고형·엑셀형 중 맞는 보고서를 생성", aud:["기관 담당자","소상공인"], type:"Claude 스킬",
+      items:["대화형 목적 확인","완성본 샘플 3종 기반","소상공인용 버전 전환"], res:[["스킬 공개 예정","","soon"]] },
+    { t:"Google Forms·Make 자동화", st:"link", role:"설문·신청·평가 폼을 받아 점수 분기, 이메일 통보, 시트 기록, 마감 처리까지 자동화", aud:["교육 운영자"], type:"노코드 워크플로 (Make)",
+      items:["사전평가 점수 분기 통보 (85점·60점 경로 + Fallback)","강의 문의 Gmail 자동 회신 (15분 주기)","강좌 신청 → 신청자·담당자 동시 메일, 선착순 마감"], res:[["설계서 연결 예정","","soon"]] },
+    { t:"Apps Script 실무 앱", st:"plan", role:"자동 출석 체크, 영수증 관리, 수료증 자동 발급 앱을 구글 앱스 스크립트로 제작", aud:["고급","기관 행정"], type:"교육 과정",
+      items:["자동 출석관리 앱","영수증 관리 앱","수료증 자동 발급 앱"], res:[["교재 제작 예정","","soon"]] },
+    { t:"지니 — CandyAflex 강사 스킬", st:"link", role:"강의안·큐시트·프롬프트 레시피 카드·교육계획서를 손애희 강사 원칙대로 만드는 전용 Claude 스킬(SKILL.md)", aud:["강사 본인","Claude 자동화 강의"], type:"Claude 스킬",
+      items:["역할→맥락→목적→제약→결과 프롬프트 구조","큐시트 3종 세트 표준","팩트·추정·의견 구분 검증"], res:[["스킬 패키지 연결 예정","","soon"]] }
+   ]},
+ { id:"biz", color:"#0F6B4F", name:"소상공인·기업 교육", tag:"Small Business",
+   desc:"매출과 시간 절약 언어로 말하는 비즈니스 AI 교육. Claude 코워크 자동화, 업종별 프롬프트, 숏폼 제작까지.",
+   agents:[
+    { t:"소상공인 코워크 실전 가이드", st:"live", role:"내 컴퓨터에서 일하는 AI(Claude Cowork) 소개, 업종별 바로 쓰는 문장, 설치 8단계, 안전 수칙", aud:["소상공인","중소기업"], type:"교재 웹앱",
+      items:["코워크·스킬·코드 무엇을 언제 쓰나","업종 탭별 프롬프트","컴퓨터가 어려운 분을 위한 가장 쉬운 시작"], res:[["가이드 열기",A("26b8efc6-8f14-4cd8-9528-61490753fd8d"),"gold"]] },
+    { t:"업종별 프롬프트 레시피 카드", st:"link", role:"밀양시소상공인연합회 워크샵에서 검증된 15개 업종 프롬프트 카드 — 복사해서 바로 결과", aud:["소상공인 15업종"], type:"레시피 카드",
+      items:["참여형 → 설명형 → 비주얼형 데모 순서","Claude 자동화 버전 재구성 검토"], res:[["카드 연결 예정","","soon"]] },
+    { t:"Claude 자동화 모객 특강 (1시간)", st:"plan", role:"경상남도 중소상공인연합회 대상 1시간 모객형 특강 — 와우 포인트 1개 라이브 데모 + CTA", aud:["중소상공인"], type:"큐시트",
+      items:["일정·정원·온오프라인 확인 필요","범용 자동화 데모 1개 라이브","신청 유도 CTA"], res:[["큐시트 제작 예정","","soon"]] },
+    { t:"숏폼 제작 교육 3종", st:"link", role:"촬영 큐시트·연출 기법·카메라 무빙 기법 교재로 소상공인 숏폼 영상 제작", aud:["소상공인","미디어센터"], type:"교재 (docx 3종)",
+      items:["경남시청자미디어센터 숏폼 촬영 큐시트","9:16 세로 콘텐츠 기준"], res:[["교재 연결 예정","","soon"]] },
+    { t:"카페 메뉴 대시보드 앱", st:"link", role:"iPad용 카페 메뉴·장바구니·원두 큐레이션 React 앱 (STAIR 카페 사례)", aud:["카페 운영자"], type:"웹앱 사례",
+      items:["관리자 패널","장바구니","소상공인 앱 제작 수업 사례"], res:[["앱 연결 예정","","soon"]] }
+   ]},
+ { id:"code", color:"#1C7293", name:"코딩·데이터·AI 개발", tag:"Coding & Data",
+   desc:"비전공자가 코드와 데이터로 넘어가는 다리. 바이브코딩, CLI, 파이썬, 데이터 분석, AI 에이전트 개발까지 강사 자신의 학습 과정을 교재로 만들었습니다.",
+   agents:[
+    { t:"10일 데이터 분석 부트캠프", st:"live", role:"파이썬·pandas 왕초보 자기주도 교재 — 100개 블록, Day별 개념·코드·실습·퀴즈, AICE Basic 연계", aud:["왕초보","코디세이 수강생"], type:"교재 웹앱",
+      items:["환경 세팅 → 파이썬 최소 문법 → pandas","시각화·시계열 기법","GitHub 제출"], res:[["부트캠프 열기",A("cb5d792d-d547-425c-b795-728baa0e17cc"),"gold"]] },
+    { t:"스마트폰 트렌드 워크북", st:"live", role:"시니어 스마트폰 검색 트렌드 시계열 분석 17단계 실습 워크북", aud:["데이터 분석 입문"], type:"교재 웹앱",
+      items:["네이버 데이터랩 수집 → 정제 → 분석 → 제출","캡처 파일 총정리"], res:[["워크북 열기",A("65c3cdf6-b41b-4139-8051-c3bfab33da6d"),"gold"]] },
+    { t:"바이브코딩 심화과정", st:"link", role:"경남 빅데이터센터 심화과정 — Claude Code·Codex CLI로 대화하며 만드는 실무 앱", aud:["중급·고급"], type:"교육 과정",
+      items:["사전 설치 가이드 (유료 구독 필수 리스크 포함)","CLI·PowerShell·VS Code 초보 교재 (초등학생도 이해)"], res:[["교재 연결 예정","","soon"]] },
+    { t:"프롬프트 매니저 (Python)", st:"live", role:"프롬프트 추가·목록·카테고리·검색·즐겨찾기 콘솔 프로그램과 셀프스터디 교재", aud:["Python 초보"], type:"GitHub 저장소 + 교재",
+      items:["리스트·딕셔너리로 구현","가로형 셀프스터디 PPT"], res:[["GitHub 열기","https://github.com/silverhealthleader-source/prompt-manager","gold"]] },
+    { t:"국내 여행 플래너 (Gemini·Kakao API)", st:"link", role:"Gemini API로 여행지·날씨·행사를 구조화하고 Kakao Local API로 음식점 5곳을 찾는 Python 프로젝트", aud:["코디세이 과제"], type:"Python 프로젝트",
+      items:["JSON·Markdown 저장","행사는 \"확인 필요\" 표시","결과 캐싱"], res:[["저장소 연결 예정","","soon"]] },
+    { t:"복지관 홍보 비서 (Final Project)", st:"plan", role:"복지기관 SNS 홍보 콘텐츠를 자동 생성·발행하는 AI Agent — 코디세이 팀 캡스톤", aud:["복지기관"], type:"AI Agent (개발 중)",
+      items:["Agent·RAG·멀티모달·자동화 중 2개 이상","외부 배포, 실사용자 5명 피드백","기획서 docx + 발표 pptx"], res:[["배포 예정","","soon"]] }
+   ]}
+];
+// Local teaching module: the original category cards and external links are retained.
+CATS.find(category => category.id === "baeumteo").agents.unshift({
+ t:"교육운영 AI 비서", st:"live", role:"월별 수업과 날짜·시간대, 과목별 교재, 교육 실적과 대화를 연결하는 강사 전용 공간",
+ aud:["강사","교육 운영자"], type:"강사 워크스페이스",
+ items:["모모 · 월별 수업 블록 / 루미 · 교재 슬라이드", "코코 · 교육 분석 / 보리 · 활동 보고서", "교육 데이터와 AI 서버 연결 후 사용"],
+ res:[["에이전트 허브 열기","education.html#agents","gold"],["월별 수업 보기","education.html#calendar","secondary"],["교재 자료실","education.html#materials","secondary"]],
+ note:"개인 교육 운영자료는 이 공개 HTML에 포함하지 않습니다."
+});
+const TOOLS = [
+ { t:"캔디A 클래스보드", d:"실시간 수업 보드. 공지·실습 프롬프트·자료·질문·결과 공유를 한 화면에서, QR로 입장.", u:A("3e2386d9-56a9-4c57-8fac-88ef1f8508c1") },
+ { t:"3D 버튼 프롬프트 랩", d:"브랜드 버튼 세트와 시니어 AAA 기준. 모든 교재 디자인의 기준 문서.", u:A("dd7d3977-02bc-46b5-995b-f5396d27c2ba") },
+ { t:"AI 면접 코치", d:"면접 연습용 대화 코치 (코드 세션 제작).", u:A("cf0ae8f6-cfb8-458c-aef5-244c9706758f") },
+ { t:"주간 AI 뉴스 브리핑", d:"매주 수요일 주요 AI 뉴스 5개 + 유튜브 링크 정리 (반복 작업, 페이지 연결 예정).", u:"" },
+ { t:"강의 문의 자동 회신", d:"Gmail 문의 → Make 자동 회신 15분 주기. 운영 중인 백오피스 자동화.", u:"" }
+];
+const LIB = [
+ { g:"운영 채널", items:[
+   ["네이버 블로그","https://blog.naver.com/wholebodyegoodballro","파워블로거 · 교육 후기·자료"],
+   ["네이버 카페 CandyAflex","https://cafe.naver.com/candyaflex","수강생 커뮤니티"],
+   ["유튜브","https://www.youtube.com/@AI-hv7bjcandyaflex","AI 영상·수업 영상"],
+   ["인스타그램 @candyaflex","https://www.instagram.com/candyaflex","카드뉴스·작품"],
+   ["카카오 오픈채팅","https://open.kakao.com/me/candy_ssam_","교육 문의"],
+   ["GitHub","https://github.com/silverhealthleader-source","코드·교재 저장소"]]},
+ { g:"생성형 AI 도구", items:[
+   ["Gemini","https://gemini.google.com/app","대화·이미지·Canvas"],
+   ["Suno","https://suno.com","AI 작사·작곡"],
+   ["Kling AI","https://kling.ai","이미지·영상 생성"],
+   ["Google Labs (Flow)","https://labs.google","Veo 기반 영상"],
+   ["Veo 프롬프트 가이드","https://cloud.google.com/blog/products/ai-machine-learning/ultimate-prompting-guide-for-veo-3-1","Google Cloud 공식"],
+   ["Midjourney 문서","https://docs.midjourney.com","이미지 프롬프트 레퍼런스"]]},
+ { g:"코코아팹·로보독 교구", items:[
+   ["코코아팹 실습 허브","https://edu.kocoafab.cc/index.html","브라우저 실습 도구"],
+   ["로보독 시뮬레이터","https://edu.kocoafab.cc/robodog-simul/index.html",""],
+   ["로보독 얼굴 만들기","https://edu.kocoafab.cc/robodog-face/index.html",""],
+   ["음성 인식(STT)","https://edu.kocoafab.cc/stt/index.html",""],
+   ["티처블 머신","https://edu.kocoafab.cc/teachableMachine/index.html",""],
+   ["코코아팹 교육자료","https://kocoafab.cc/edu/handout","핸드아웃·커리큘럼"]]},
+ { g:"저작권·약관 확인처", items:[
+   ["한국저작권위원회","https://www.copyright.or.kr","AI 생성물 저작권"],
+   ["Canva 콘텐츠 라이선스","https://www.canva.com/policies/content-license-agreement/",""],
+   ["Adobe 생성형 AI 가이드라인","https://www.adobe.com/legal/licenses-terms/adobe-gen-ai-user-guidelines.html",""],
+   ["OpenAI 이용약관","https://openai.com/policies/terms-of-use",""],
+   ["Suno 이용약관","https://suno.com/legal/terms",""]]},
+ { g:"통계·근거 자료", items:[
+   ["네이버 데이터랩","https://datalab.naver.com","검색 트렌드"],
+   ["한국지능정보사회진흥원(NIA)","https://www.nia.or.kr/site/nia_kor/ex/bbs/List.do?cbIdx=81623","디지털 정보격차 실태조사"],
+   ["정책브리핑","https://www.korea.kr/briefing/pressReleaseView.do?newsId=156681128","디지털 격차 보도자료"],
+   ["경남사회복지협의회","https://www.knsw.or.kr/html/main.html",""]]}
+];
+const ST = {live:"운영 중", link:"연결 예정", plan:"기획·진행"};
+const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const all = CATS.flatMap(c=>c.agents);
+const cnt = (s,arr=all) => arr.filter(a=>a.st===s).length;
+const btn = ([l,u,k]) => u ? `<a class="btn ${k==="gold"?"btn-primary":"btn-gold"}" href="${u}" target="_blank" rel="noopener">${esc(l)}</a>` : `<span class="btn soon" aria-disabled="true">${esc(l)}</span>`;
+const agentCard = (k,c) => `
+  <article class="agent" style="--c:${c.color}">
+    <div class="top"><h3>${esc(k.t)}</h3><span class="pill ${k.st}">${ST[k.st]}</span></div>
+    <p class="role">${esc(k.role)}</p>
+    <div class="meta"><span class="type">${esc(k.type)}</span>${k.aud.map(a=>`<span>${esc(a)}</span>`).join("")}</div>
+    <ul class="items">${k.items.map(s=>`<li>${esc(s)}</li>`).join("")}</ul>
+    <div class="res">${k.res.map(btn).join("")}</div>
+    ${k.note?`<p class="note">${esc(k.note)}</p>`:""}
+  </article>`;
+
+const PAGES = [
+ { id:"home", label:"홈", grp:"시작", render(){ return `
+  <div class="inner">
+    <section class="hero">
+      <div>
+        <span class="eyebrow" style="color:var(--accent)">CandyAflex · AI 디지털 융합 아카데미</span>
+        <h1>하나의 입구,<br>영역별 <em>전문 에이전트</em></h1>
+        <p>동화책 창작, AI 영상·음악, 시니어 디지털배움터, 사회복지 현장 AI, 캔바 디자인, 업무 자동화, 소상공인 교육, 코딩·데이터. 손애희 강사가 만든 교재·웹앱·슬라이드·스킬을 영역별 에이전트로 정리했습니다. 왼쪽 메뉴에서 영역을 고르면 담당 에이전트 페이지로 이동합니다.</p>
+        <div class="actions"><a class="btn btn-gold" href="education.html#agents">강사 에이전트 실행 ↗</a><button class="btn btn-outline" data-go="story">첫 영역 보기</button><button class="btn btn-outline" data-go="lib">자료실</button><button class="btn btn-outline" data-go="about">강사 소개</button></div>
+      </div>
+      <div class="kpi">
+        <div><b>${CATS.length}</b><span>교육 영역</span></div>
+        <div><b>${all.length}</b><span>전문 에이전트</span></div>
+        <div><b>${cnt("live")}</b><span>운영 중</span></div>
+        <div><b>${cnt("link")+cnt("plan")}</b><span>연결·제작 예정</span></div>
+      </div>
+    </section>
+
+    <h2 class="h2">허브 구조</h2>
+    <div class="flow">
+      <div class="box core"><h3>통합 아카데미 허브</h3><p>이 사이트. 영역 안내, 에이전트 목록과 상태, 문의 창구를 맡습니다.</p></div>
+      <div class="arr">→</div>
+      <div class="box"><h3>영역 ${CATS.length}개</h3><p>대상과 목적이 같은 활동을 묶은 단위. 영역마다 담당 에이전트 그룹이 있습니다.</p></div>
+      <div class="arr">→</div>
+      <div class="box"><h3>전문 에이전트</h3><p>역할이 하나로 정해진 웹앱·교재·슬라이드·Claude 스킬. 각자 자기 링크로 열립니다.</p></div>
+    </div>
+    <div class="legend"><b>상태</b> <span class="pill live">운영 중</span> 링크로 바로 열림 <span class="pill link">연결 예정</span> 자료는 있으나 링크 미연결 <span class="pill plan">기획·진행</span> 제작 중</div>
+
+    <h2 class="h2">교육 영역</h2>
+    <div class="map">${CATS.map(c=>`<button class="mapc" data-go="${c.id}" style="--c:${c.color}"><span class="eyebrow">${c.tag}</span><h3>${c.name}</h3><p>${esc(c.desc.split(".")[0])}.</p><span class="cnt">에이전트 ${c.agents.length} · 운영 중 ${cnt("live",c.agents)}</span></button>`).join("")}</div>
+  </div>`; } },
+ ...CATS.map(c=>({ id:c.id, label:c.name, grp:"교육 영역", color:c.color, n:c.agents.length, render(){ return `
+  <div class="inner" style="--c:${c.color}">
+    <div class="crumb">홈 <span class="sep">/</span> 교육 영역 <span class="sep">/</span> ${esc(c.name)}</div>
+    <div class="phead">
+      <div><span class="eyebrow">${c.tag}</span><h1><span class="bar"></span>${esc(c.name)}</h1><p>${esc(c.desc)}</p></div>
+      <div class="counts"><div class="count"><b>${c.agents.length}</b><span>에이전트</span></div><div class="count"><b>${cnt("live",c.agents)}</b><span>운영 중</span></div><div class="count"><b>${cnt("link",c.agents)}</b><span>연결 예정</span></div><div class="count"><b>${cnt("plan",c.agents)}</b><span>기획·진행</span></div></div>
+    </div>
+    <div class="grid">${c.agents.map(k=>agentCard(k,c)).join("")}</div>
+  </div>`; } })),
+ { id:"tools", label:"공용 수업 도구", grp:"자료", n:TOOLS.length, render(){ return `
+  <div class="inner">
+    <div class="crumb">홈 <span class="sep">/</span> 공용 수업 도구</div>
+    <div class="phead"><div><span class="eyebrow">Shared Tools</span><h1><span class="bar"></span>모든 영역에서 함께 쓰는 에이전트</h1><p>특정 영역에 속하지 않고 수업 운영 전반을 돕는 도구입니다.</p></div></div>
+    <div class="grid">${TOOLS.map(t=>`<div class="tool"><h3>${esc(t.t)}</h3><p>${esc(t.d)}</p>${t.u?`<a class="btn btn-primary" href="${t.u}" target="_blank" rel="noopener">열기</a>`:`<span class="btn soon" aria-disabled="true">연결 예정</span>`}</div>`).join("")}</div>
+  </div>`; } },
+ { id:"lib", label:"채널·자료실", grp:"자료", render(){ return `
+  <div class="inner">
+    <div class="crumb">홈 <span class="sep">/</span> 채널·자료실</div>
+    <div class="phead"><div><span class="eyebrow">Library</span><h1><span class="bar"></span>채널, 도구, 참고 링크</h1><p>수업에서 쓰는 AI 도구와 교구, 저작권·약관 확인처, 운영 채널. 외부 사이트는 새 탭에서 열립니다.</p></div></div>
+    <div class="grid">${LIB.map(g=>`<div class="libg"><h3>${esc(g.g)}</h3><ul>${g.items.map(([n,u,d])=>`<li><a href="${u}" target="_blank" rel="noopener">${esc(n)}</a>${d?`<small>${esc(d)}</small>`:""}</li>`).join("")}</ul></div>`).join("")}</div>
+  </div>`; } },
+ { id:"about", label:"강사 소개·문의", grp:"자료", render(){ return `
+  <div class="inner">
+    <div class="crumb">홈 <span class="sep">/</span> 강사 소개·문의</div>
+    <div class="phead"><div><span class="eyebrow">Instructor</span><h1><span class="bar"></span>손애희 · CandyAflex</h1></div></div>
+    <div class="about">
+      <div class="card">
+        <h2 style="font-size:1.2rem">세상의 온도를 1도 더 따뜻하게 만드는 이야기꾼</h2>
+        <p>생성형 AI 활용 강사, 한국사회복지협의회 디지털 전문강사, 디지털배움터 강사, Canva·투닝 전문강사, AI 아티스트, 동화작가. 은행원에서 사회복지사, 생활체육지도사를 거쳐 디지털 강사가 되었습니다. 사회복지·주거복지 기관, 공공기관, 평생교육기관, 노인복지관에서 AI와 디지털을 "바로 쓰는 방법"으로 가르칩니다.</p>
+        <ul>
+          <li>교육 철학: "배워서 남주자" — 이론 30%, 실습 70%</li>
+          <li>시니어 원칙: 한 화면에 한 과제, 큰 글씨, 명확한 버튼, 따라 하기, 반복 복습</li>
+          <li>AI 활용 원칙: AI는 초안·정리·구조화를 돕고, 최종 판단과 책임은 사람이 맡습니다</li>
+          <li>개인정보 원칙: 이름·주소·연락처·계좌번호는 AI에 그대로 입력하지 않습니다</li>
+        </ul>
+        <div class="books"><span>《플로라와 마법의 꽃잎》</span><span>《버섯 숲의 인생 이야기》</span><span>《바다 동물 컬러링북》</span><span>《시간을 파는 상점》</span><span>공저 《우리는 디지털 튜터다》</span></div>
+      </div>
+      <div class="card contact" aria-label="문의 채널">
+        <div class="row"><b>이메일</b><span id="mail">skkk3927@naver.com</span><button class="copy" data-copy="skkk3927@naver.com">복사</button></div>
+        <div class="row"><b>블로그</b><a href="https://blog.naver.com/wholebodyegoodballro" target="_blank" rel="noopener">blog.naver.com/wholebodyegoodballro</a></div>
+        <div class="row"><b>카페</b><a href="https://cafe.naver.com/candyaflex" target="_blank" rel="noopener">cafe.naver.com/candyaflex</a></div>
+        <div class="row"><b>유튜브</b><a href="https://www.youtube.com/@AI-hv7bjcandyaflex" target="_blank" rel="noopener">@AI-hv7bjcandyaflex</a></div>
+        <div class="row"><b>인스타그램</b><a href="https://www.instagram.com/candyaflex" target="_blank" rel="noopener">@candyaflex</a></div>
+        <div class="row"><b>카카오톡</b><a href="https://open.kakao.com/me/candy_ssam_" target="_blank" rel="noopener">오픈채팅 candy_ssam_</a></div>
+        <div class="row"><b>GitHub</b><a href="https://github.com/silverhealthleader-source" target="_blank" rel="noopener">silverhealthleader-source</a></div>
+      </div>
+    </div>
+  </div>`; } }
+];
+
+// sidebar
+const nav = document.getElementById("sidenav");
+let lastGrp = null;
+nav.innerHTML = PAGES.map(p=>{ const g = p.grp!==lastGrp ? `<li class="grp">${p.grp}</li>` : ""; lastGrp=p.grp;
+  return g + `<li><button data-go="${p.id}" ${p.color?`style="--c:${p.color}"`:""}>${p.color?'<span class="dot"></span>':""}${esc(p.label)}${p.n?`<span class="n">${p.n}</span>`:""}</button></li>`; }).join("");
+
+// pages
+const pagesEl = document.getElementById("pages");
+pagesEl.innerHTML = PAGES.map((p,i)=>{
+  const prev = PAGES[i-1], next = PAGES[i+1];
+  return `<section class="page" id="pg-${p.id}" data-page="${p.id}">${p.render()}
+  <div class="inner"><div class="pager">${prev?`<button data-go="${prev.id}"><small>← 이전</small><b>${esc(prev.label)}</b></button>`:"<span></span>"}${next?`<button class="next" data-go="${next.id}"><small>다음 →</small><b>${esc(next.label)}</b></button>`:""}</div></div></section>`;
+}).join("");
+
+const side=document.getElementById("side"), scrim=document.getElementById("scrim"), hamb=document.getElementById("hamb");
+function go(id, push=true){
+  if(!PAGES.some(p=>p.id===id)) id="home";
+  document.querySelectorAll(".page").forEach(s=>s.classList.toggle("active", s.dataset.page===id));
+  nav.querySelectorAll("button").forEach(b=>{ if(b.dataset.go===id) b.setAttribute("aria-current","page"); else b.removeAttribute("aria-current"); });
+  side.classList.remove("open"); scrim.classList.remove("show"); hamb.setAttribute("aria-expanded","false");
+  if(push){ try{ history.replaceState(null,"","#"+id); }catch(e){} }
+  window.scrollTo({top:0});
+}
+document.addEventListener("click",e=>{ const b=e.target.closest("[data-go]"); if(b){ e.preventDefault(); go(b.dataset.go); } });
+hamb.addEventListener("click",()=>{ const o=side.classList.toggle("open"); scrim.classList.toggle("show",o); hamb.setAttribute("aria-expanded",o); });
+scrim.addEventListener("click",()=>{ side.classList.remove("open"); scrim.classList.remove("show"); hamb.setAttribute("aria-expanded","false"); });
+document.addEventListener("click",async e=>{
+  const b=e.target.closest(".copy"); if(!b) return; let ok=false;
+  try{ await navigator.clipboard.writeText(b.dataset.copy); ok=true; }catch(err){ const el=document.getElementById("mail"); const r=document.createRange(); r.selectNodeContents(el); const s=getSelection(); s.removeAllRanges(); s.addRange(r); }
+  const t=document.createElement("div"); t.className="toast"; t.textContent= ok?"이메일 주소를 복사했습니다":"주소를 선택했습니다. 길게 눌러 복사하세요"; document.body.appendChild(t); setTimeout(()=>t.remove(),2200);
+});
+go(location.hash ? location.hash.slice(1) : "home", false);
+</script>
+
+</body></html>

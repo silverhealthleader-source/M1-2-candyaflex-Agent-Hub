@@ -1,0 +1,23 @@
+.env
+.env.*
+!.env.example
+.venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+.local/
+*-debug.log
+service-account*.json
+*firebase-adminsdk*.json
+frontend/dist/
+.vercel/
+
+# Private teaching records and proof images are never published.
+data/
+docs/screenshots/
+docs/verification/
+*.hwp
+*.hwpx
+*.pdf
+*.pptx
+*.csv

@@ -1,0 +1,24 @@
+.month-plan-count{display:block;margin-top:9px;padding:5px 8px;border-radius:7px;background:#f1edf8;color:#72548b;font-size:12px;line-height:1.5}
+.plan-detail{padding:28px;margin-bottom:26px;scroll-margin-top:20px}
+.plan-heading{display:flex;justify-content:space-between;gap:24px;align-items:center;margin-bottom:17px}
+.plan-heading h2{font-size:22px;color:#604b74;margin:9px 0}
+.plan-heading p{font-size:13px;color:#746780;line-height:1.8;margin:0}
+.plan-heading label{font-size:12px;color:#746780;min-width:160px}
+.plan-heading select{display:block;width:100%;margin-top:7px}
+.plan-policy{padding:15px 18px;background:#faf5e8;border:1px solid #eee1bd;border-radius:10px;color:#806432;font-size:13px;line-height:1.9;margin-bottom:22px}
+.plan-card{display:grid;grid-template-columns:140px minmax(0,1fr);gap:22px;border:1px solid #e8e2ef;border-left:4px solid #b7a3cd;border-radius:11px;margin:13px 0;padding:20px;background:#fefeff}
+.plan-card[data-plan-status=held]{border-left-color:#c69a3e;background:#fffdf7}
+.plan-card[data-plan-status=completed]{border-left-color:#6b9d80;background:#f8fcf9}
+.plan-date{display:flex;flex-direction:column;gap:8px;color:#776280}
+.plan-date strong{font-size:16px;color:#604b74}.plan-date span{font-size:14px;font-weight:550}.plan-date small{font-size:12px;color:#81738b}
+.plan-card-top{display:flex;gap:10px;align-items:center;flex-wrap:wrap;line-height:1.7}
+.plan-status{font-size:12px;border-radius:20px;padding:3px 10px;background:#eee8f5;color:#79608e;white-space:nowrap}
+[data-plan-status=held] .plan-status{background:#f7e8bc;color:#89671c}
+[data-plan-status=completed] .plan-status{background:#dfefe4;color:#46795a}
+.plan-institution{font-size:13px;color:#746780;overflow-wrap:anywhere}
+.plan-content h3{font-size:16px;line-height:1.7;color:#51415f;margin:11px 0 7px;overflow-wrap:anywhere}
+.plan-audience,.plan-status-note,.plan-replacement{font-size:13px;line-height:1.8;margin:6px 0;color:#746780}
+.plan-replacement{color:#8b6a27}.plan-source{font-size:12px;line-height:1.8;color:#81738b;margin-top:12px}
+.plan-source summary{cursor:pointer;color:#8a719e}.plan-source p{white-space:pre-wrap}.plan-source small{display:block;overflow-wrap:anywhere}
+.plan-footnote{font-size:12px;line-height:1.9;color:#81738b;margin-top:18px}
+@media(max-width:700px){.plan-detail{padding:20px 15px}.plan-heading{display:block}.plan-heading h2{font-size:19px}.plan-heading label{display:block;margin-top:15px}.plan-heading select{max-width:220px}.plan-card{grid-template-columns:1fr;gap:12px;padding:16px}.plan-date{flex-direction:row;align-items:center;gap:12px;flex-wrap:wrap}.plan-date strong{font-size:15px}.plan-date span{font-size:13px}.plan-policy{font-size:12px;padding:13px}.plan-content h3{font-size:15px}.month-plan-count{font-size:10px;padding:4px}}
