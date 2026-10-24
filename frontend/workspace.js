@@ -129,7 +129,7 @@
     const grid=$('#subject-grid');grid.replaceChildren();if(!groups.length){grid.append(empty(connected?'아직 연결된 교재가 없습니다':'찾는 과목이 없습니다',connected?'‘연결된 교재만 보기’를 해제하면 수업 과목을 볼 수 있어요.':''));return;}
     for(const group of groups){const card=element('article','subject-card panel');const top=element('div','subject-card-top');top.append(element('span','subject-book','▤'),element('span','',group.course_count?`원본 과정 ${group.course_count}건`:'교재 분야'));card.append(top,element('h3','',group.subject));
       if(!group.materials.length)card.append(element('p','material-empty','교재 연결 전'));
-      for(const material of group.materials){const row=element('div','material-row');const info=element('div');info.append(element('strong','',material.title),element('small','',`${material.source_platform || (material.source_type==='local_file'?'이 컴퓨터':material.kind==='canva'?'Canva':'원본 링크')}${material.page_count?' · '+material.page_count+'쪽':''}`));const button=element('button','material-open','슬라이드 보기 ↗');button.onclick=()=>openSlides(material);row.append(info,button);card.append(row);}
+      for(const material of group.materials){const row=element('div','material-row');const info=element('div');info.append(element('strong','',material.title),element('small','',`${material.source_platform || (material.source_type==='firestore_file'?'비공개 PDF':material.source_type==='local_file'?'이 컴퓨터':material.kind==='canva'?'Canva':'원본 링크')}${material.page_count?' · '+material.page_count+'쪽':''}`));const button=element('button','material-open',material.kind==='pdf'?'PDF 보기 ↗':'슬라이드 보기 ↗');button.onclick=()=>openSlides(material);row.append(info,button);card.append(row);}
       const add=element('button','text-button','이 과목에 교재 연결 +');add.onclick=()=>openMaterialForm(group.subject);card.append(add);grid.append(card);
     }
   }
@@ -141,9 +141,9 @@
     $('#slide-title').textContent=material.title;$('#slide-subject').textContent=material.subject;const stage=$('#slide-stage'),tools=$('#slide-tools');stage.replaceChildren(empty('교재를 준비하고 있어요'));tools.replaceChildren();$('#slide-dialog').showModal();setAgentState('materials','working','선택한 교재를 열고 있어요.');
     if(slideBlob){URL.revokeObjectURL(slideBlob);slideBlob=null;}
     try{
-      if(material.source_type==='local_file'){
+      if(['local_file','firestore_file'].includes(material.source_type)){
         const headers={};const token=sessionStorage.getItem('academy_access_key');if(token)headers.Authorization=`Bearer ${token}`;
-        const response=await fetch(apiBase()+'/api/materials/'+encodeURIComponent(material.id)+'/file',{headers});if(!response.ok)throw new Error('교재 파일을 열 수 없습니다. 서비스 연결을 확인해 주세요.');
+        const response=await fetch(apiBase()+'/api/materials/'+encodeURIComponent(material.id)+'/file',{headers});if(!response.ok){let message='교재 파일을 열 수 없습니다. 서비스 연결을 확인해 주세요.';try{message=(await response.json()).detail||message;}catch{}throw new Error(message);}
         const blob=await response.blob();if(sequence!==slideSequence)return;
         slideBlob=URL.createObjectURL(blob);stage.replaceChildren();
         if(material.kind==='pdf'){const frame=element('iframe','pdf-slide-frame');frame.src=slideBlob;frame.title=material.title+' PDF 슬라이드';stage.append(frame);}

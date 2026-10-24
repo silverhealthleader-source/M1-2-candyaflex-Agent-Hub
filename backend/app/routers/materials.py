@@ -7,6 +7,7 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl, field_validator
 
 from ..database import get_repository
+from ..material_storage import MaterialFileUnavailable, get_material_file_store
 from ..services import now
 
 router = APIRouter(prefix="/api/materials", tags=["과목별 교재"])
@@ -71,8 +72,16 @@ def delete_material(key: str, repo=Depends(get_repository)):
 @router.get("/{key}/file")
 def material_file(key: str, download: bool = False, repo=Depends(get_repository)):
     record = repo.get("materials", key)
-    if not record or record.get("source_type") != "local_file":
+    if not record or record.get("source_type") not in {"local_file", "firestore_file"}:
         raise HTTPException(404, "교재 파일을 찾을 수 없습니다.")
+    if record.get("source_type") == "firestore_file":
+        try:
+            target = get_material_file_store().get_file(record.get("storage_sha256"))
+        except MaterialFileUnavailable as exc:
+            raise HTTPException(503, str(exc)) from exc
+        return FileResponse(target, media_type="application/pdf", filename=record.get("file_name", "교재.pdf"),
+                            content_disposition_type="attachment" if download else "inline",
+                            headers={"Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff"})
     root = LOCAL_LIBRARY.resolve()
     target = (root / record.get("storage_name", "")).resolve()
     if target.parent != root or not target.is_file() or target.suffix.lower() not in {".pdf", ".pptx"}:
