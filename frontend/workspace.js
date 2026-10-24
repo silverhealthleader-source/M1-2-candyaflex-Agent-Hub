@@ -111,6 +111,7 @@
   $('#material-form').addEventListener('submit',async event=>{event.preventDefault();const button=$('#material-submit');button.disabled=true;try{const values=Object.fromEntries(new FormData(event.currentTarget));if(!safeLink(values.url))throw new Error('https://로 시작하는 교재 원본 주소를 입력해 주세요.');await api('/api/materials',{method:'POST',body:JSON.stringify(values)});$('#material-dialog').close();await runAgent('materials',loadSubjects);toast('과목에 교재 링크를 연결했습니다.');}catch(error){toast(error.message);}finally{button.disabled=false;}});
   async function openSlides(material){
     const sequence=++slideSequence;
+    const note=$('#slide-note');note.textContent=material.note||'';note.hidden=!material.note;
     $('#slide-title').textContent=material.title;$('#slide-subject').textContent=material.subject;const stage=$('#slide-stage'),tools=$('#slide-tools');stage.replaceChildren(empty('교재를 준비하고 있어요'));tools.replaceChildren();$('#slide-dialog').showModal();setAgentState('materials','working','선택한 교재를 열고 있어요.');
     if(slideBlob){URL.revokeObjectURL(slideBlob);slideBlob=null;}
     try{

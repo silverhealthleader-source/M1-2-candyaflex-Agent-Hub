@@ -21,7 +21,7 @@
 
 FastAPI·Pydantic, Firestore 접근, GPT Responses API 연결 코드, 바닐라 HTML/CSS/JS 화면과 Render·Vercel 설정을 준비했습니다. API 테스트는 격리된 가상 기록과 모의 AI 응답으로 검증합니다.
 
-인터넷 Firestore 연결과 실제 API의 데이터 추가·수정·삭제, 대화 저장·불러오기 검증을 완료했습니다. 실제 운영자료와 검증 화면은 비공개로 보관합니다. **실제 GPT 응답과 Render·Vercel 배포는 아직 완료하지 않았습니다.** 제출 시 실제 AI 실행 화면과 배포 URL을 추가해야 합니다. Function Calling과 MCP Server/GPT Actions는 선택 보너스로 아직 구현하지 않았습니다. 전체 허브는 시스템의 밝은/어두운 테마를 따르며 강사 화면의 수동 다크 모드 토글은 없습니다.
+인터넷 Firestore 연결과 실제 API의 데이터 추가·수정·삭제, 대화 저장·불러오기 검증을 완료했습니다. 실제 운영자료와 검증 화면은 비공개로 보관합니다. Render 무료 백엔드를 배포하고 접속 키 없는 조회 차단, 데이터 CRUD와 대화 저장·복원을 검증했습니다. **실제 GPT 응답과 Vercel 프론트엔드 배포는 아직 완료하지 않았습니다.** 제출 시 실제 AI 실행 화면과 Vercel 주소를 추가해야 합니다. Function Calling과 MCP Server/GPT Actions는 선택 보너스로 아직 구현하지 않았습니다. 전체 허브는 시스템의 밝은/어두운 테마를 따르며 강사 화면의 수동 다크 모드 토글은 없습니다.
 
 ## 실행 순서 (Windows PowerShell)
 
@@ -89,6 +89,15 @@ node frontend/build.mjs
 격리된 자동 테스트 23개는 CRUD·요약·시간대 보존, 교재 경로 보호, 대화 저장·실패 처리, 계획과 실적 분리, 가상 자료 생성과 클라우드/에뮬레이터 연결 선택을 검증합니다. 자동 테스트에는 실제 운영 데이터나 GPT 과금 호출을 사용하지 않습니다. 빈 `FIRESTORE_EMULATOR_HOST` 값은 클라우드 연결 전에 제거하여 SDK가 빈 에뮬레이터 주소에 연결하지 않도록 합니다.
 
 ## 배포
+
+| 서비스 | 주소·상태 |
+|---|---|
+| Render 백엔드 | https://candyaflex-edu-api.onrender.com |
+| Swagger | https://candyaflex-edu-api.onrender.com/docs |
+| Vercel 프론트엔드 | GitHub 저장소 연결 후 배포 예정 |
+| 실제 GPT 답변 | 비공개 API 키 연결 후 검증 예정 |
+
+Render 운영 API는 개인 접속 키 없이는 교육자료를 반환하지 않습니다. 운영자료와 검증 캡처는 이 공개 저장소에 포함하지 않습니다. 교재를 열면 메모와 버전 설명을 표시하며 원본 서비스의 로그인 조건을 유지합니다.
 
 1. Render에서 `render.yaml` 기준으로 백엔드를 구성합니다. `FIREBASE_PROJECT_ID`, `FIREBASE_SERVICE_ACCOUNT_JSON`, `OPENAI_API_KEY`, `APP_ACCESS_TOKEN`, `ALLOWED_ORIGINS`를 비공개 환경변수로 설정합니다. 운영 환경에서 에뮬레이터 주소는 비웁니다.
 2. Vercel의 Root Directory는 `frontend`입니다. `API_BASE_URL`에 Render HTTPS 주소를 입력합니다. `frontend/vercel.json`이 빌드와 출력 폴더를 설정합니다.
