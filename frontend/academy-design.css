@@ -256,7 +256,7 @@ html[data-theme=dark] .academy-portal .mapc{box-shadow:0 5px 0 #081925,0 12px 24
 
 /* User-supplied dandelion artwork: only home canvases, never foreground opacity. */
 .academy-portal #pg-home,.academy-workspace #view-agents{
-  --home-art-opacity:.48;position:relative;isolation:isolate;background:#edf7fc;
+  --home-art-opacity:.48;position:relative;isolation:isolate;background:#edf7fc;clip-path:inset(0);
 }
 .academy-portal #pg-home::before,.academy-workspace #view-agents::before{
   content:"";position:fixed;inset:0 0 0 272px;z-index:-1;pointer-events:none;
