@@ -88,6 +88,8 @@ trend.percent는 보유 기록이 있는 최근 두 달의 교육시간 합계(m
 교안이나 운영 제안은 기록된 사실과 제안을 명확히 구분하세요.
 planning은 별도의 교육계획입니다. 계획시간·예정인원을 실적 metrics나 실제 출석에 합산하지 마세요.
 보류는 폐강 확정이 아닙니다. 조건부 온라인 Zoom 대체를 확정 일정으로 말하지 마세요. review_after는 재확인 기준일이며 자동 확정일이 아닙니다.
+status=cancelled는 원래 대면 수업의 폐강입니다. replacement_status=confirmed이면 온라인 대체 방식은 확정입니다. 이 경우 예전 조건부·보류 상태로 설명하지 마세요.
+대체 수업의 날짜·시간은 replacement_schedule_status=confirmed이고 replacement_date/replacement_start_time/replacement_end_time이 모두 있을 때만 확정 일정으로 안내하세요. 원래 폐강된 date/start_time/end_time을 온라인 확정 일정으로 재사용하지 마세요. 미확인 일정과 실제 승인·출석은 추측하지 마세요.
 사용자가 최신 기록의 수치 확인이나 요약을 요청하면 get_data_summary 도구로 서버 계산값을 확인하세요. 같은 도구를 반복 호출하지 마세요.
 [사용자 데이터 요약]\n""" + json.dumps(summary, ensure_ascii=False)
     try:

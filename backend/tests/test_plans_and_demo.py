@@ -51,6 +51,38 @@ def test_chat_receives_conditional_plans_separately(setup, monkeypatch):
     assert captured[0]['planning']['conditional_zoom_count'] == 1
 
 
+def test_confirmed_zoom_keeps_cancelled_source_and_pending_time_out_of_actuals(setup, monkeypatch):
+    client, repo = setup
+    row = {**virtual_plans()[0], 'status': 'cancelled', 'decision_review_after': None,
+           'replacement_status': 'confirmed', 'replacement_mode': '온라인 Zoom',
+           'replacement_schedule_status': 'pending', 'replacement_date': None,
+           'replacement_start_time': None, 'replacement_end_time': None,
+           'replacement_note': '온라인 전환 확정, 대체 날짜·시간 확인 중'}
+    repo.save('plans', row['id'], row)
+    summary = client.get('/api/data/summary').json()
+    assert summary['metrics']['total'] == 0 and summary['count'] == 0
+    plan = summary['planning']
+    assert plan['by_status']['cancelled'] == 1 and plan['by_status']['held'] == 0
+    assert plan['cancelled_plan_hours'] == 2 and plan['conditional_zoom_count'] == 0
+    assert plan['confirmed_zoom_count'] == plan['zoom_schedule_pending_count'] == 1
+    assert plan['sessions'][0]['replacement_date'] is None
+    captured = []
+    def fake_answer(context, messages):
+        captured.append(context['planning']['sessions'][0])
+        return '온라인 전환은 확정이며 세부 일정은 확인 중입니다.'
+    monkeypatch.setattr(chat, 'generate_answer', fake_answer)
+    assert client.post('/api/chat', json={'message': '대체 수업 상태'}).status_code == 200
+    assert captured[0]['status'] == 'cancelled'
+    assert captured[0]['replacement_status'] == 'confirmed'
+    assert captured[0]['replacement_start_time'] is None
+    row.update(replacement_schedule_status='confirmed', replacement_date='2024-11-01',
+               replacement_start_time='09:00', replacement_end_time='11:00')
+    repo.save('plans', row['id'], row)
+    refreshed = client.get('/api/data/summary').json()
+    assert refreshed['planning']['zoom_schedule_pending_count'] == 0
+    assert refreshed['metrics']['total'] == 0
+
+
 def test_demo_generator_produces_consistent_nonpersonal_records(tmp_path):
     scripts = Path(__file__).resolve().parents[1] / 'scripts'
     def load(name):

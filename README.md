@@ -21,6 +21,8 @@
 
 전체 허브와 강사 워크스페이스에는 공통 `academy-design.css`를 적용합니다. 네이비·청록 투컬러 입체 메뉴, 아이보리·골드 선택 표시, 블록형 콘텐츠 카드, 모바일 두 열 메뉴와 밝은/어두운 화면을 지원합니다. 기존 데이터·대화·교재 기능은 그대로 연결됩니다.
 
+교육계획의 `status=cancelled`는 원래 수업의 폐강을 보존합니다. `replacement_status=confirmed`는 온라인 대체 방식의 확정이며, 대체 날짜·시간은 `replacement_schedule_status`와 별도 날짜·시간 필드로 확인합니다. 미확인 대체 일정을 원본 시간표나 실제 실적으로 간주하지 않습니다. 월별 화면과 AI 요약에도 이 구분을 반영합니다.
+
 ## 구현 및 배포 상태
 
 FastAPI·Pydantic, Firestore 접근, GPT Responses API 연결 코드, 바닐라 HTML/CSS/JS 화면과 Render·Vercel 설정을 준비했습니다. API 테스트는 격리된 가상 기록과 모의 AI 응답으로 검증합니다.
