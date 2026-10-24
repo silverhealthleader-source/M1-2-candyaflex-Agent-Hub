@@ -27,6 +27,15 @@ const names = {agents:'에이전트 허브',calendar:'월별 수업 블록',mate
 let toastTimer;
 const number = value => new Intl.NumberFormat('ko-KR', {maximumFractionDigits:2}).format(value);
 const times = row => (row.schedule_units || []).map(unit => `${unit.start_time}–${unit.end_time}`).join(' / ');
+const savedTheme = localStorage.getItem('academy_theme');
+function setTheme(theme) {
+  document.documentElement.dataset.theme = theme;
+  $('#theme-toggle').setAttribute('aria-pressed', String(theme === 'dark'));
+  $('#theme-toggle').textContent = theme === 'dark' ? '밝게' : '어둡게';
+  $('#theme-toggle').setAttribute('aria-label', theme === 'dark' ? '밝은 화면으로 전환' : '어두운 화면으로 전환');
+}
+setTheme(savedTheme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+$('#theme-toggle').onclick = () => {const theme=document.documentElement.dataset.theme==='dark'?'light':'dark';localStorage.setItem('academy_theme',theme);setTheme(theme);};
 
 function element(tag, className, text) {
   const node = document.createElement(tag);
@@ -84,6 +93,7 @@ function empty(message, description = '') {const node=element('div','empty-state
 
 async function refresh() {
   $('#refresh-button').disabled = true;
+  const slowNotice = setTimeout(() => notice('첫 연결을 준비하고 있어요. 무료 서버가 쉬고 있었다면 1분 정도 걸릴 수 있습니다. 잠시 기다려 주세요.'), 8000);
   try {
     const health = await api('/health'); state.health = health;
     $('#connection-status').classList.toggle('disconnected', !health.database_configured);
@@ -91,6 +101,7 @@ async function refresh() {
     $('#chat-availability').textContent = health.ai_configured ? '교육운영 요약을 바탕으로 답변해요' : 'AI 연결 준비 중 · 데이터 기능은 사용할 수 있어요';
     if (!health.database_configured) throw new Error('교육 데이터 저장소를 연결할 준비 중입니다. Firebase 설정을 완료하면 저장된 기록이 표시됩니다.');
     const summary = await api('/api/data/summary' + periodQuery()); state.summary = summary; renderSummary();
+    clearTimeout(slowNotice);
     notice(health.database_mode === 'emulator' ? '로컬 Firestore에서 실제 교육 기록을 불러왔습니다. 인터넷 데이터베이스 연결은 계정 설정 후 이어서 진행합니다.' : '');
     await loadRecent();
     if (state.view === 'data') await loadData();
@@ -101,7 +112,7 @@ async function refresh() {
     $('#connection-status').classList.add('disconnected');
     $('#connection-status').lastChild.textContent = '연결 확인 필요';
     $('#recent-list').replaceChildren(empty('교육 기록 연결을 기다리고 있어요','연결되면 최근 수업을 확인할 수 있습니다.'));
-  } finally {$('#refresh-button').disabled = false;}
+  } finally {clearTimeout(slowNotice);$('#refresh-button').disabled = false;}
 }
 function renderSummary() {
   const s = state.summary;
@@ -114,6 +125,15 @@ function renderSummary() {
   $('#satisfaction-value').textContent = s.satisfaction.average === null ? '미입력' : `${number(s.satisfaction.average)}점`;
   $('#satisfaction-count').textContent = `${s.satisfaction.scored_courses}개 과정 · 미입력 제외`;
   $('#context-period').textContent = period; $('#context-count').textContent = `${number(s.count)}건`; $('#context-hours').textContent = `${number(s.metrics.total)}시간`;
+  const trend = s.trend;
+  const trendText = trend.percent === null ? trend.label : `${trend.label} · ${number(Math.abs(trend.percent))}% (${trend.from_month} → ${trend.to_month})`;
+  $('#summary-average').textContent = `${number(s.metrics.average)}시간`;
+  $('#summary-max').textContent = `${number(s.metrics.max)}시간`;
+  $('#summary-min').textContent = `${number(s.metrics.min)}시간`;
+  $('#summary-trend').textContent = trendText;
+  $('#context-average').textContent = `${number(s.metrics.average)}시간 / 기록`;
+  $('#context-range').textContent = `${number(s.metrics.min)} ~ ${number(s.metrics.max)}시간`;
+  $('#context-trend').textContent = trendText;
   const chart = $('#monthly-chart'); chart.replaceChildren();
   const months = s.monthly.slice(-12); const max = Math.max(1,...months.map(m=>m.hours));
   if (!months.length) chart.append(empty('표시할 교육 기록이 없습니다'));
@@ -216,7 +236,9 @@ $$('[data-close]').forEach(button=>button.onclick=()=>$('#'+button.dataset.close
 $('#hero-chat').onclick=()=>navigate('chat');$('#report-question').onclick=()=>ask('기록에 근거한 강사 활동 보고서 초안을 작성해 줘.');
 $('#new-chat').onclick=newChat;$('#history-new-chat').onclick=newChat;$('#add-data').onclick=()=>openRecord();
 $('#refresh-button').onclick=()=>refresh();
-$('#year-filter').onchange=async event=>{state.year=event.target.value;state.offset=0;await refresh();};
+async function changeYear(event){state.year=event.target.value;state.offset=0;$('#year-filter').value=state.year;$('#chat-year-filter').value=state.year;await refresh();}
+$('#year-filter').onchange=changeYear;
+$('#chat-year-filter').onchange=changeYear;
 $('#search-form').onsubmit=async event=>{event.preventDefault();state.offset=0;try{await loadData();}catch(error){toast(error.message);}};
 $('#mode-filter').onchange=()=>$('#search-form').requestSubmit();
 $('#previous-page').onclick=async()=>{state.offset=Math.max(0,state.offset-state.limit);try{await loadData();}catch(error){toast(error.message);}};

@@ -13,7 +13,7 @@
 - 모모: 12개월 블록, 날짜·시간대별 수업 및 별도 교육계획.
 - 루미: 과목별 슬라이드·Canva 링크 연결, 등록한 로컬 PDF 열람·다운로드.
 - 코코·보리: 교육 분석과 활동 보고서 역할의 AI 대화. 실행 상태에 따라 캐릭터가 움직입니다.
-- 교육 실적 CRUD, 기간별 합계·평균·최댓값·최솟값·추세, CSV/JSON 내보내기, 대화 자동 저장·조회·삭제.
+- 교육 실적 CRUD, 기간별 합계·평균·최댓값·최솟값·추세, JSON 내보내기, 대화 자동 저장·조회·삭제.
 
 외부 링크 상태는 사용자 제공 원본의 분류입니다. 모든 외부 앱의 현재 동작을 검증했다는 뜻은 아닙니다.
 
@@ -23,9 +23,40 @@ FastAPI·Pydantic, Firestore 접근, GPT Responses API 연결 코드, 바닐라 
 
 Render 무료 백엔드와 Vercel 프론트엔드를 배포했습니다. 인터넷 Firestore 연결, 접속 키 없는 조회 차단, 교육기록 추가·수정·삭제, 대화 저장·전체 메시지 복원을 검증했습니다. Vercel 화면에서 실제 GPT 답변과 후속 질문, 자동 저장을 확인했고 실제 프론트엔드 출처의 CORS 요청도 통과했습니다. 검증용 교육기록은 활성 목록에서 제외하고 원래 합계가 복원됐는지 확인했습니다. 실제 운영자료와 검증 화면은 비공개로 보관합니다.
 
-Function Calling과 MCP Server/GPT Actions는 선택 보너스로 아직 구현하지 않았습니다. 전체 허브는 시스템의 밝은/어두운 테마를 따르며 강사 화면의 수동 다크 모드 토글은 없습니다. 교재는 연결된 항목부터 사용할 수 있으며 전체 교재 수집은 진행 중입니다.
+선택 보너스로 GPT의 교육 요약 Function Calling, 같은 요약을 조회하는 로컬 stdio MCP 서버와 별도 클라이언트, 월별 그래프·추가 통계·JSON 내보내기·강사 화면 다크 모드 토글을 구현했습니다. GPT Actions는 MCP와의 중복 구현을 하지 않습니다. 교재는 연결된 항목부터 사용할 수 있으며 전체 교재 수집은 진행 중입니다.
 
 배포된 [전체 허브](https://candyaflex-edu-agent-hub.vercel.app/)에서 ‘강사 에이전트 실행’을 누릅니다. [강사 화면](https://candyaflex-edu-agent-hub.vercel.app/education)의 ‘연결 설정’에 본인의 개인 접속 키를 입력하면 운영자료를 조회할 수 있습니다. 키는 현재 탭의 세션에만 저장합니다. 이 저장소는 강사 개인용이며 공개 체험 계정이나 다중 사용자 계정 분리는 제공하지 않습니다.
+
+## 기술 스택
+
+| 영역 | 구성 |
+|---|---|
+| Backend | Python 3.10+, FastAPI, Pydantic, Uvicorn |
+| Database | Firebase Firestore, firebase-admin |
+| AI | OpenAI Python SDK · Responses API · 읽기 전용 Function Calling |
+| Frontend | HTML/CSS/JavaScript, 프레임워크 없음 |
+| 배포 | Render 백엔드 · Vercel 정적 프론트엔드 |
+| 선택 외부 채널 | 공식 MCP Python SDK 2.3.0 · 로컬 stdio 서버/별도 클라이언트 |
+
+구조 설계와 여섯 학습목표 설명은 [과제 요구사항 점검](docs/assignment-review.md), 함수 스키마·호출 흐름과 MCP 실행은 [도구 연동](docs/tool-integration.md)에 정리했습니다.
+
+## 환경변수
+
+서버의 `backend/.env.example`을 복사해 비공개 `.env`를 만듭니다. Vercel에는 공개 가능한 `API_BASE_URL`만 설정합니다.
+
+| 변수 | 위치·용도 |
+|---|---|
+| OPENAI_API_KEY | 서버 전용 실제 GPT 키 |
+| OPENAI_MODEL | 서버 모델, 기본 `gpt-4.1-mini` |
+| OPENAI_MAX_OUTPUT_TOKENS | 요청당 출력 제한, 기본 1000 |
+| FIREBASE_PROJECT_ID | 서버 Firestore 프로젝트 ID |
+| FIREBASE_SERVICE_ACCOUNT_JSON | 서버 서비스 계정 JSON 또는 파일 경로 |
+| GOOGLE_APPLICATION_CREDENTIALS | 서비스 계정 파일 경로를 사용하는 대안 |
+| FIRESTORE_EMULATOR_HOST | 로컬 에뮬레이터 전용. 인터넷 DB에서는 비움 |
+| APP_ACCESS_TOKEN | 서버의 개인 접속 키, production 필수 |
+| APP_ENV | 로컬 `development`, Render `production` |
+| ALLOWED_ORIGINS | Render에서 허용할 Vercel 출처, 쉼표 구분 |
+| API_BASE_URL | Vercel 빌드의 Render 주소. 선택 MCP 클라이언트도 조회 대상 주소로 사용 |
 
 ## 실행 순서 (Windows PowerShell)
 
@@ -90,7 +121,7 @@ node --check frontend/workspace.js
 node frontend/build.mjs
 ```
 
-격리된 자동 테스트 23개는 CRUD·요약·시간대 보존, 교재 경로 보호, 대화 저장·실패 처리, 계획과 실적 분리, 가상 자료 생성과 클라우드/에뮬레이터 연결 선택을 검증합니다. 자동 테스트에는 실제 운영 데이터나 GPT 과금 호출을 사용하지 않습니다. 빈 `FIRESTORE_EMULATOR_HOST` 값은 클라우드 연결 전에 제거하여 SDK가 빈 에뮬레이터 주소에 연결하지 않도록 합니다.
+격리된 자동 테스트 30개는 CRUD·요약·시간대 보존, 교재 경로 보호, 대화 저장·실패 처리, 계획과 실적 분리, 가상 자료 생성과 클라우드/에뮬레이터 연결 선택을 검증합니다. 도구 호출 결과 전달, 허용하지 않은 함수·인수 차단, 호출 횟수 제한도 검사합니다. 자동 테스트에는 실제 운영 데이터나 GPT 과금 호출을 사용하지 않습니다. 빈 `FIRESTORE_EMULATOR_HOST` 값은 클라우드 연결 전에 제거하여 SDK가 빈 에뮬레이터 주소에 연결하지 않도록 합니다.
 
 ## 배포
 
@@ -110,5 +141,17 @@ Render 운영 API는 개인 접속 키 없이는 교육자료를 반환하지 �
 4. 실제 Firestore 데이터·대화 저장을 확인하고 제출용 캡처를 별도로 준비합니다. 공개 캡처에는 실제 교육 운영자료를 노출하지 않습니다.
 
 로컬 교재는 `.local/library`에 보관합니다. 현재 인터넷 배포는 링크형 교재를 사용하며 원본 서비스의 로그인·공유 조건을 따릅니다. 로컬 PDF 원본은 Render에 배포하지 않았습니다. PDF 원본도 인터넷에서 제공하려면 인증된 영구 저장소를 추가로 연결해야 합니다.
+
+## 제출 스크린샷과 시연
+
+실제 운영자료의 공개를 제외해 달라는 사용자 요청에 따라 캡처는 공개 GitHub에 올리지 않습니다. 비공개 제출 폴더의 `README.md`에 아래 세 종류의 실제 실행 화면을 삽입합니다.
+
+| 필수 증빙 | 확인할 내용 |
+|---|---|
+| 채팅 + 요약 | 질문·실제 GPT 답변과 DATA CONTEXT의 기간·개수·통계·추세 |
+| 데이터 관리 | 검증용 기록 추가/수정 결과가 목록에 표시되고 제거 후 원래 집계로 복원됨 |
+| 대화 기록 | 이전 대화 목록과 ‘대화 이어가기’ 후 전체 메시지 재표시 |
+
+평가자가 실제 앱을 조회하려면 개인 접속 키가 필요합니다. 공개 체험 계정을 만들지 않았으며 실제 키를 README에 기재하지 않습니다. 키 전달과 운영자료가 포함된 캡처 제출은 승인된 비공개 경로 또는 직접 시연으로 진행합니다.
 
 Firestore 직접 읽기·쓰기는 규칙으로 차단하고 서버의 Admin SDK로 접근합니다. 배포 환경에서는 개인 접속 키 설정이 필수입니다. 현재는 강사 개인용이며 여러 사용자의 계정별 데이터 분리는 구현하지 않았습니다.

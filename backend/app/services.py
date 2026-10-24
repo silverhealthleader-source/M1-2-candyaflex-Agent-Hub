@@ -6,6 +6,7 @@ from statistics import mean
 from openai import OpenAI, OpenAIError
 
 from .config import get_settings
+from .agent_tools import AgentAnswer, SUMMARY_TOOL, run_summary_tool
 
 
 def now():
@@ -86,15 +87,37 @@ metrics.average는 교육일별 데이터 기록 1건당 평균 교육시간입�
 교안이나 운영 제안은 기록된 사실과 제안을 명확히 구분하세요.
 planning은 별도의 교육계획입니다. 계획시간·예정인원을 실적 metrics나 실제 출석에 합산하지 마세요.
 보류는 폐강 확정이 아닙니다. 조건부 온라인 Zoom 대체를 확정 일정으로 말하지 마세요. review_after는 재확인 기준일이며 자동 확정일이 아닙니다.
+사용자가 최신 기록의 수치 확인이나 요약을 요청하면 get_data_summary 도구로 서버 계산값을 확인하세요. 같은 도구를 반복 호출하지 마세요.
 [사용자 데이터 요약]\n""" + json.dumps(summary, ensure_ascii=False)
     try:
         with OpenAI(api_key=settings.openai_key, timeout=45, max_retries=1) as client:
+            inputs = list(messages[-12:])
             response = client.responses.create(model=settings.model, instructions=instructions,
-                                               input=messages[-12:], max_output_tokens=settings.max_output_tokens, store=False)
+                                               input=inputs, tools=[SUMMARY_TOOL], parallel_tool_calls=False,
+                                               max_output_tokens=settings.max_output_tokens, store=False)
+            calls = [item for item in response.output if item.type == "function_call"]
+            trace = []
+            if calls:
+                if response.status == "incomplete" or len(calls) != 1:
+                    raise ChatUnavailable("도구 조회를 완료하지 못했습니다. 질문 범위를 줄여 다시 시도해 주세요.")
+                call = calls[0]
+                try:
+                    arguments = json.loads(call.arguments)
+                    result = run_summary_tool(call.name, arguments, summary)
+                except (ValueError, TypeError) as exc:
+                    raise ChatUnavailable("허용된 교육 요약 도구로 처리하지 못했습니다. 다시 질문해 주세요.") from exc
+                trace.append({"name": call.name, "arguments": arguments,
+                              "basis": "선택 기간의 교육기록 수치 확인", "data_period": summary["period"]})
+                inputs.extend(response.output)
+                inputs.append({"type": "function_call_output", "call_id": call.call_id,
+                               "output": json.dumps(result, ensure_ascii=False)})
+                response = client.responses.create(model=settings.model, instructions=instructions,
+                                                   input=inputs, tools=[SUMMARY_TOOL], tool_choice="none",
+                                                   max_output_tokens=settings.max_output_tokens, store=False)
         if response.status == "incomplete":
             raise ChatUnavailable("답변이 출력 한도에 도달했습니다. 질문의 범위를 줄여 다시 시도해 주세요.")
         if not response.output_text.strip():
             raise ChatUnavailable("AI 답변이 비어 있습니다. 잠시 후 다시 시도해 주세요.")
-        return response.output_text.strip()
+        return AgentAnswer(response.output_text.strip(), trace)
     except OpenAIError as exc:
         raise ChatUnavailable("AI 서버에 연결하지 못했습니다. API 키·사용 한도·모델 설정을 확인한 뒤 다시 시도해 주세요.") from exc

@@ -1,0 +1,36 @@
+.summary-statistics{padding:24px;margin-bottom:24px}
+.summary-statistics h3{margin:0 0 6px;font-size:17px}
+.summary-statistics p{font-size:12px;color:var(--muted);margin:6px 0}
+.summary-statistics dl{display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) minmax(220px,1.8fr);gap:20px;margin:18px 0}
+.summary-statistics dt{font-size:12px;color:var(--muted)}
+.summary-statistics dd{margin:4px 0 0;font-size:21px;font-weight:650;color:var(--purple)}
+.summary-statistics .trend-stat dd{font-size:14px;line-height:1.7}
+.chat-period-controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px;font-size:12px}
+.chat-period-controls select{min-width:110px}
+.chat-context dd{overflow-wrap:anywhere}
+.chat-context #context-trend{font-size:12px;line-height:1.7}
+.theme-toggle{font-size:11px;min-height:32px;padding:5px 10px}
+html[data-theme=dark]{color-scheme:dark;--bg:#171923;--surface:#222633;--ink:#eeeaf7;--muted:#b6b2c5;--purple:#bba2f2;--purple-dark:#a58cdd;--lavender:#373047;--border:#3c3d50;--mint:#263b36;--teal:#95cfbb;background:var(--bg);color:var(--ink)}
+html[data-theme=dark] body{background:var(--bg)}
+html[data-theme=dark] :is(.sidebar,.topbar,.panel,.stat-card,.history-card,.subject-card,.month-block,.agent-activity,dialog,.skip-link){background:var(--surface);border-color:var(--border);color:var(--ink)}
+html[data-theme=dark] :is(h1,h2,h3,h4,.brand-title,.brand-title small,.breadcrumb strong,.stat-value strong,td strong,.recent-row-title,.month-block-value,.time-content h4,.material-row strong,.agent-card h3,.chat-top strong){color:var(--ink)}
+html[data-theme=dark] :is(p,small,dt,.muted,.eyebrow,.nav-item,.sidebar-settings,.agent-description,.agent-state-label,.time-meta,.time-label small,.day-block-heading>span,.month-block p,.month-block-top,.library-toggle,.chart-month,.chart-note,.stat-label,td,th,.record-time,.chat-footnote,.saved-indicator,.breadcrumb,.calendar-agent-banner p span){color:var(--muted)}
+html[data-theme=dark] :is(input,select,textarea,.composer){background:#1c202c;color:var(--ink);border-color:var(--border)}
+html[data-theme=dark] :is(.nav-item.active,.nav-item:hover,.button.secondary,.month-block.selected,.chat-agent-switch button.selected){background:#3c3251;color:#e2d3ff;border-color:#65517f}
+html[data-theme=dark] .button.primary{background:#8d70c5;color:white}
+html[data-theme=dark] :is(.hero,.hub-bottom-panel,.sidebar-note,.library-source-note,.assistant-card,.calendar-agent-banner,.satisfaction-box,.plan-notice){background:#2b2e40;border-color:var(--border)}
+html[data-theme=dark] .agent-card{background:linear-gradient(#2e3341,#222633);border-color:var(--border)}
+html[data-theme=dark] .agent-card.mint{--agent-light:#294037;--agent-accent:#acd5bd}
+html[data-theme=dark] .agent-card.lilac{--agent-light:#3a304c;--agent-accent:#d4b7ed}
+html[data-theme=dark] .agent-card.peach{--agent-light:#44342f;--agent-accent:#e1bba8}
+html[data-theme=dark] .agent-card.butter{--agent-light:#423c2a;--agent-accent:#dfc78f}
+html[data-theme=dark] :is(.hub-data-chips span,.status-pill,.mode-tag,.new-badge,.question-grid button,.chat-agent-switch button,.time-meta span){background:#333548;color:var(--ink);border-color:var(--border)}
+html[data-theme=dark] .message.assistant{background:#322c43;color:#e5dcef}
+html[data-theme=dark] .message.user{background:#765ca8;color:white}
+html[data-theme=dark] :is(.table-scroll,td,th,.recent-row,.month-detail-heading,.day-block,.material-row,.page-footer,.plan-card){border-color:var(--border)}
+html[data-theme=dark] .plan-card{background:#292c3b}
+html[data-theme=dark] :is(.notice,.empty-state,.plan-empty){color:#d0c8df}
+html[data-theme=dark] .month-block.selected{box-shadow:0 0 0 2px #5c4678}
+html[data-theme=dark] .mode-track{background:#36384a}
+@media(max-width:960px){.chat-context{display:block}.summary-statistics dl{grid-template-columns:repeat(3,minmax(0,1fr))}.summary-statistics .trend-stat{grid-column:1/-1}}
+@media(max-width:640px){.summary-statistics{padding:18px}.summary-statistics dl{gap:12px}.summary-statistics dd{font-size:18px}.summary-statistics dt{font-size:10px}.chat-period-controls .muted{font-size:11px}.theme-toggle{font-size:10px;padding:4px 7px}.chat-context{margin-top:4px}}
