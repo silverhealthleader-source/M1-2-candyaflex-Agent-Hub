@@ -33,13 +33,13 @@ def build_summary(rows, courses):
         monthly[row["date"][:7]] += row["value"]
         daily[row["date"]] += row["value"]
     months = [{"month": month, "hours": round(hours, 2)} for month, hours in sorted(monthly.items())]
-    trend = {"label": "비교할 기록이 부족합니다", "percent": None}
+    trend = {"label": "비교할 기록이 부족합니다", "percent": None, "metric": "education_hours"}
     if len(months) > 1:
         previous, current = months[-2:]
         if previous["hours"] > 0:
             change = round((current["hours"] / previous["hours"] - 1) * 100, 1)
             trend = {"label": "기록 기준 증가" if change > 0 else "기록 기준 감소" if change < 0 else "기록 기준 유지",
-                     "percent": change, "from_month": previous["month"], "to_month": current["month"]}
+                     "percent": change, "metric": "education_hours", "from_month": previous["month"], "to_month": current["month"]}
     scores = [r["satisfaction_for_analysis"] for r in selected_courses if r.get("satisfaction_for_analysis") is not None]
     student_total = sum(r.get("students_for_analysis", 0) or 0 for r in selected_courses) + sum(r.get("students", 0) or 0 for r in standalone)
     period = {"start": min((r["date"] for r in rows), default=None), "end": max((r["date"] for r in rows), default=None)}
@@ -80,6 +80,7 @@ def generate_answer(summary, messages):
 수치는 요약에 있는 값만 사용하고 없는 내용은 확인할 수 없다고 답하세요. 기록 기준일과 기간을 밝혀 주세요.
 count는 교육일별 데이터 기록 건수(건), teaching_days는 서로 다른 교육일수(일), course_count는 원본 과정 수(과정)입니다. 세 지표를 서로 바꾸어 쓰지 마세요. 전체 기록 요약이나 기록 건수를 요청하면 count를 반드시 표시하고 교육일수·과정 수와 구분하세요.
 metrics.average는 교육일별 데이터 기록 1건당 평균 교육시간입니다. 수업 회차당 평균이나 서로 다른 교육일 1일당 평균으로 설명하지 마세요.
+trend.percent는 보유 기록이 있는 최근 두 달의 교육시간 합계(monthly.hours) 변화율입니다. 기록 건수·교육생 수의 증감률로 설명하지 말고 반드시 교육시간의 변화라고 명시하세요.
 승인 교육은 정상 교육입니다. 교육 0명·수료 인원 있음은 수료 인원을 교육생 수로 씁니다.
 축제·에듀버스 만족도 0점은 미입력이며 낮은 만족도가 아닙니다. 시간대가 다른 수업은 별도 수업입니다.
 교육생 합계는 과정별 연인원이며 고유 수강생 수가 아닙니다. 승인 여부가 연결되지 않았다면 승인 완료라고 단정하지 마세요.

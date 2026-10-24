@@ -76,3 +76,12 @@ def test_summary_tool_preserves_aggregate_and_excludes_schedule_details():
     assert result["metrics"]["total"] == 2
     assert result["planning"] == {"count": 1, "scheduled_hours": 3}
     assert result == summary_for_tool(summary())
+
+
+def test_trend_measures_hours_when_record_count_moves_in_opposite_direction():
+    result = services.build_summary([
+        {"date": "2026-09-01", "value": 1}, {"date": "2026-09-02", "value": 1},
+        {"date": "2026-10-01", "value": 3},
+    ], [])
+    assert result["trend"]["metric"] == "education_hours"
+    assert result["trend"]["percent"] == 50
