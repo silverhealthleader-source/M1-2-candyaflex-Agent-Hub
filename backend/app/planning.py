@@ -16,7 +16,11 @@ def with_schedule_conflicts(rows):
                 continue
             if first["date"] == second["date"] and first["start_time"] < second["end_time"] and second["start_time"] < first["end_time"]:
                 for row, other in [(first, second), (second, first)]:
-                    row["schedule_conflicts"].append({key: other.get(key) for key in ["id", "date", "start_time", "end_time", "title", "institution"]})
+                    separate = (row.get("distinct_session_confirmed") is True and other.get("distinct_session_confirmed") is True
+                                and row.get("same_time_separate_session_id") == other["id"]
+                                and other.get("same_time_separate_session_id") == row["id"])
+                    row["schedule_conflicts"].append({**{key: other.get(key) for key in ["id", "date", "start_time", "end_time", "title", "institution"]},
+                                                      "distinct_session_confirmed": separate})
     return result
 
 
@@ -37,6 +41,7 @@ def summarize_plans(rows):
     online = [r for r in rows if is_confirmed_online(r)]
     months = sorted({r["date"][:7] for r in online})
     conflicts = {tuple(sorted([r["id"], other["id"]])) for r in rows for other in r["schedule_conflicts"]}
+    confirmed_distinct = {tuple(sorted([r["id"], other["id"]])) for r in rows for other in r["schedule_conflicts"] if other["distinct_session_confirmed"]}
     return {"count": len(rows), "by_status": {key: counts[key] for key in STATUS_LABELS},
             "source_planned_hours": round(sum(r["planned_hours"] for r in rows), 2),
             "scheduled_hours": round(sum(r["planned_hours"] for r in rows if r["status"] == "scheduled"), 2),
@@ -53,6 +58,8 @@ def summarize_plans(rows):
             "online_schedule_monthly": [{"month": month, "count": sum(r["date"].startswith(month) for r in online),
                                           "hours": round(sum(r["planned_hours"] for r in online if r["date"].startswith(month)), 2)} for month in months],
             "schedule_conflict_count": len(conflicts),
+            "confirmed_distinct_overlap_count": len(confirmed_distinct),
+            "schedule_conflict_pending_count": len(conflicts - confirmed_distinct),
             "note": "교육계획은 실적과 별도 집계합니다. 시간·인원은 원본 계획서 기준이며 실시·승인 상태와 별개입니다. "
                     "폐강된 원래 일정과 대체 수업을 구분합니다. 온라인 대체 확정 여부와 날짜·시간 확정 여부는 각각 확인합니다. "
                     "보류는 폐강 확정이 아니며 대체 수업의 실제 출석·시간·승인으로 집계하지 않습니다."}
@@ -61,7 +68,8 @@ def summarize_plans(rows):
 def planning_context(rows):
     selected = select_plans(with_schedule_conflicts(rows))
     return {**summarize_plans(selected), "sessions": [
-        {key: row.get(key) for key in ["date", "start_time", "end_time", "institution", "region", "title", "status", "status_note", "approval_status", "planned_hours", "planned_students", "replacement_condition",
+        {key: row.get(key) for key in ["id", "date", "start_time", "end_time", "institution", "region", "title", "status", "status_note", "approval_status", "planned_hours", "planned_students", "replacement_condition",
                                      "replacement_mode", "replacement_status", "replacement_schedule_status", "replacement_date", "replacement_start_time", "replacement_end_time", "replacement_note",
-                                     "replacement_schedule_group_id", "schedule_group_id", "schedule_status", "delivery_mode", "registration_status", "schedule_conflicts"]}
+                                     "replacement_schedule_group_id", "schedule_group_id", "schedule_status", "delivery_mode", "registration_status", "schedule_conflicts",
+                                     "distinct_session_confirmed", "same_time_separate_session_id", "original_schedule_date"]}
         for row in selected[:80]], "sessions_truncated": len(selected) > 80}

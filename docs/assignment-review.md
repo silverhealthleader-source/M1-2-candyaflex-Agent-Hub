@@ -65,3 +65,9 @@ flowchart LR
 - GPT `get_data_summary` Function Calling 및 같은 집계의 로컬 stdio MCP 조회. 연결·검증 방법은 [도구 연동 문서](tool-integration.md)를 참고합니다.
 
 MCP는 별도 클라이언트와 서버 프로세스 간 호출을 검증하는 방식입니다. Codex·Cowork에 영구 설치하거나 공개 MCP 주소를 개설한 상태를 뜻하지 않습니다. 외부 AI 호스트별 등록은 별도 설정이며 이 구현에 필수는 아닙니다. GPT Actions는 중복 구현하지 않습니다.
+
+## 시간표 정정과 같은 시간의 별개 수업
+
+원본 출처와 `original_schedule_date`를 보존하고 현재 일정은 `date`로 조회합니다. 서로 다른 수업이라는 사용자 확인은 두 ID의 상호 연결로 저장합니다. 확인한 쌍과 미확인 시간 중복을 구분해 화면과 GPT 컨텍스트에 전달하며, 같은 시간이라는 이유로 자동 병합·삭제하지 않습니다.
+
+컨텍스트 전달 방식은 [OpenAI 공식 텍스트 생성 문서](https://developers.openai.com/api/docs/guides/text)의 `instructions`와 입력 맥락 구분을 참고합니다.

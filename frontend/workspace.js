@@ -85,7 +85,9 @@
     if(summary.confirmed_zoom_count)policy.push(`폐강 원본 수업 ${summary.confirmed_zoom_count}건의 온라인 Zoom 전환이 확정되었습니다.${summary.zoom_schedule_pending_count?` 이 중 ${summary.zoom_schedule_pending_count}건은 대체 날짜·시간 확인 중입니다. 폐강된 원래 일정을 Zoom 확정 일정으로 보지 마세요.`:''}`);
     if(summary.confirmed_online_count)policy.push(`날짜·시간이 확인된 온라인 Zoom 일정은 ${summary.confirmed_online_count}회 · ${number(summary.confirmed_online_hours)}시간입니다. 과목명·인원·접속 정보는 별도로 확인합니다.`);
     if(summary.zoom_group_schedule_confirmed_count)policy.push('폐강 수업의 대체 전체 시간표가 연결되었습니다. 과목별 회차는 임의로 배정하지 않습니다.');
-    if(summary.schedule_conflict_count)policy.push(`시간이 겹치는 일정 ${summary.schedule_conflict_count}쌍이 있습니다. 해당 카드의 확인 표시를 살펴보세요.`);
+    const pendingOverlaps=summary.schedule_conflict_pending_count??summary.schedule_conflict_count;
+    if(pendingOverlaps)policy.push(`시간이 겹쳐 확인이 필요한 일정 ${pendingOverlaps}쌍이 있습니다. 해당 카드의 확인 표시를 살펴보세요.`);
+    if(summary.confirmed_distinct_overlap_count)policy.push(`같은 시간의 별개 수업 ${summary.confirmed_distinct_overlap_count}쌍은 사용자 확인에 따라 각각 유지합니다.`);
     $('#plan-policy').textContent=policy.join(' ');
     const filter=$('#plan-status-filter').value,items=month.plans.filter(plan=>!filter||(filter==='online'?plan.schedule_status==='confirmed'&&plan.delivery_mode==='온라인 Zoom':plan.status===filter)),list=$('#plan-list');list.replaceChildren();
     if(!items.length){list.append(empty('이 상태에 해당하는 계획이 없습니다'));return;}
@@ -101,7 +103,10 @@
       top.append(element('span','plan-status',online?'온라인 일정 확정':labels[plan.status]||plan.status),element('span','plan-institution',`${plan.region} · ${plan.institution.replace(/\n/g,' ')}`));
       content.append(top,element('h3','',plan.title),element('p','plan-audience',`${online?'교육 대상':'원본 계획 대상'}: ${plan.audience_raw} · ${plan.delivery_mode}`));
       if(plan.status!=='scheduled'||online)content.append(element('p','plan-status-note',plan.status_note||''));
-      if(plan.schedule_conflicts?.length)content.append(element('p','plan-conflict',`시간 중복 확인 필요: ${plan.schedule_conflicts.map(other=>`${other.start_time}–${other.end_time} · ${other.institution||other.title}`).join(' / ')}. 진행시간 또는 담당 강사를 확인해 주세요.`));
+      for(const confirmed of [true,false]){
+        const overlaps=(plan.schedule_conflicts||[]).filter(other=>Boolean(other.distinct_session_confirmed)===confirmed);
+        if(overlaps.length)content.append(element('p',`plan-conflict${confirmed?' confirmed-separate':''}`,`${confirmed?'동시간대 별도 수업 · 사용자 확인 완료':'시간 중복 확인 필요'}: ${overlaps.map(other=>`${other.start_time}–${other.end_time} · ${other.institution||other.title}`).join(' / ')}. ${confirmed?'서로 다른 수업으로 각각 보존합니다.':'진행시간 또는 담당 강사를 확인해 주세요.'}`));
+      }
       if(plan.replacement_status==='confirmed'){
         const replacement=element('div','plan-replacement confirmed-replacement');replacement.append(element('strong','',`${plan.replacement_mode||'온라인'} 대체 확정`));
         const scheduled=plan.replacement_schedule_status==='confirmed'&&plan.replacement_date&&plan.replacement_start_time&&plan.replacement_end_time;

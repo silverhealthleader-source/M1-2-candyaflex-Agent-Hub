@@ -154,6 +154,8 @@
 .academy-workspace .plan-conflict{padding:12px 15px;border:1px solid #d9ba78;border-left:4px solid #a87723;border-radius:8px;background:#fbf2df;color:#76521e;font-size:14px;line-height:1.8}
 .academy-workspace .confirmed-replacement .button{margin-top:12px}
 html[data-theme=dark] .academy-workspace .plan-conflict{background:#403724;border-color:#806a3d;color:#f3ddac}
+.academy-workspace .plan-conflict.confirmed-separate{background:#edf7f4;border-color:#a6cbc0;border-left-color:#287768;color:#25594f}
+html[data-theme=dark] .academy-workspace .plan-conflict.confirmed-separate{background:#243e39;border-color:#537c70;color:#ccebe0}
 html[data-theme=dark] .academy-workspace .plan-card[data-online=true] .plan-status{background:#244b51;color:#c6eeea}
 .academy-workspace .confirmed-replacement{background:#e7f4f3;border:1px solid #a3ccca;border-left:4px solid #388a89;border-radius:9px;padding:15px 18px;margin:14px 0;color:#204e59}
 .academy-workspace .confirmed-replacement strong{display:block;font-size:16px}.academy-workspace .confirmed-replacement p{margin:6px 0 0;font-size:14px;line-height:1.8;color:inherit}

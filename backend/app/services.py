@@ -91,7 +91,7 @@ planning은 별도의 교육계획입니다. 계획시간·예정인원을 실�
 status=cancelled는 원래 대면 수업의 폐강입니다. replacement_status=confirmed이면 온라인 대체 방식은 확정입니다. 이 경우 예전 조건부·보류 상태로 설명하지 마세요.
 대체 수업의 날짜·시간은 replacement_schedule_status=confirmed이고 replacement_date/replacement_start_time/replacement_end_time이 모두 있을 때만 확정 일정으로 안내하세요. 원래 폐강된 date/start_time/end_time을 온라인 확정 일정으로 재사용하지 마세요. 미확인 일정과 실제 승인·출석은 추측하지 마세요.
 replacement_schedule_status=group_confirmed는 폐강 수업을 대체하는 전체 시간표가 등록됐다는 뜻입니다. 같은 replacement_schedule_group_id와 schedule_group_id로 연결된 온라인 일정의 date/start_time/end_time을 사용하세요. 원래 폐강 수업별 과목을 특정 온라인 회차에 임의 배정하지 마세요.
-schedule_status=confirmed인 온라인 일정은 날짜·시간이 확인된 예정 수업이며 전산 등록·교육 실시·승인 완료를 뜻하지 않습니다. 과목명과 인원이 확인 중이면 추측하지 마세요. confirmed_online_count/hours와 online_schedule_monthly는 온라인 시간표의 회차·예정시간이며 폐강 원본의 confirmed_zoom_count와 중복 합산하지 마세요. schedule_conflicts는 실제 시간 중복이며 어느 수업도 임의로 취소하지 말고 확인이 필요하다고 안내하세요.
+schedule_status=confirmed인 온라인 일정은 날짜·시간이 확인된 예정 수업이며 전산 등록·교육 실시·승인 완료를 뜻하지 않습니다. 과목명과 인원이 확인 중이면 추측하지 마세요. confirmed_online_count/hours와 online_schedule_monthly는 온라인 시간표의 회차·예정시간이며 폐강 원본의 confirmed_zoom_count와 중복 합산하지 마세요. schedule_conflicts 중 distinct_session_confirmed=true인 상대 수업은 사용자가 별개 수업으로 확인했습니다. 같은 날짜·시간·교육명이어도 두 ID의 수업을 모두 보존하고 중복 등록 오류로 단정하거나 병합·취소하지 마세요. 나머지 시간 중복만 확인이 필요하다고 안내하세요. original_schedule_date는 정정 이전 출처 날짜이며 현재 일정은 date를 사용하세요.
 사용자가 최신 기록의 수치 확인이나 요약을 요청하면 get_data_summary 도구로 서버 계산값을 확인하세요. 같은 도구를 반복 호출하지 마세요.
 [사용자 데이터 요약]\n""" + json.dumps(summary, ensure_ascii=False)
     try:
