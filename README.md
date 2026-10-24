@@ -5,6 +5,7 @@
 | 접속 | URL |
 |---|---|
 | 평가용 강사 워크스페이스 | https://candyaflex-edu-agent-hub.vercel.app/education |
+| 동료평가 발표 슬라이드 | https://candyaflex-edu-agent-hub.vercel.app/presentation |
 | 전체 아카데미 허브 | https://candyaflex-edu-agent-hub.vercel.app/ |
 | Render 백엔드 | https://candyaflex-edu-api.onrender.com |
 | Swagger UI | https://candyaflex-edu-api.onrender.com/docs |
@@ -150,6 +151,8 @@ API를 통한 저장은 캐시에도 즉시 반영합니다. 외부 가져오기
 선택한 PDF는 접속 보호된 Firestore 파일 보관 기능으로 온라인 열람·다운로드합니다. 파일당 32 MiB, 전체 128 MiB의 개인용 한도를 적용하며 Render 임시 디스크는 검증된 캐시입니다. Canva 원본의 공유·로그인 조건은 유지합니다. [PDF 안내](docs/pdf-library.md)를 참고하세요.
 
 ## 동료평가 제출 자료
+
+가로 16:9 [발표 웹사이트](https://candyaflex-edu-agent-hub.vercel.app/presentation)는 전체 설명 18장·필수 시연 10장, 발표자 메모, 키보드 이동·전체 화면·인쇄, 실제 서비스 시연 창을 제공합니다. 운영 캡처는 공개 배포에 넣지 않습니다. 비공개 제출 ZIP의 `screenshots` PNG를 ‘발표 준비’에서 선택하면 브라우저 안에서만 표시됩니다. 캡처가 포함된 별도 비공개 발표 ZIP은 오프라인에서도 실행됩니다. [발표 사용법](docs/presentation-guide.md)을 참고하세요.
 
 [필수 항목·여섯 학습목표 설명](docs/assignment-review.md), [제출 체크리스트](docs/submission-checklist.md), [Function Calling·MCP 호출 흐름](docs/tool-integration.md)을 제공합니다.
 
