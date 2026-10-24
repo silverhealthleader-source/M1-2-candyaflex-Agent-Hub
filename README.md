@@ -1,107 +1,99 @@
 # 캔디A플렉스 에듀 융합에이전트
 
-코디세이 M1-2 개인과제 · 캔디A플렉스 에듀 융합에이전트
+날짜별 교육시간과 수업 메모를 관리하고, 저장된 통계를 근거로 AI와 대화하는 강사 개인용 서비스입니다. 월별 시간표·과목별 교재·역할별 캐릭터를 함께 제공합니다. 동료평가 대상인 네 가지 핵심 기능은 **강사 워크스페이스**에 있습니다.
 
-교육 영역별 웹앱·교재를 연결하는 전체 허브와 강사 전용 교육운영 AI 비서의 소스 코드입니다. Cowork에서 제작한 8개 영역·47개 항목을 유지하고 교육운영 진입 카드를 추가했습니다. 사용자 제공 CandyAflex PNG 로고를 데스크톱·모바일에 적용했습니다.
-
-**실제 교육 실적·계획 JSON, 교재 원본, 운영 화면 캡처, 계정 키는 이 공개 저장소에 포함하지 않습니다.** 개인 자료는 별도로 보관하고 인증된 데이터베이스에만 가져옵니다. 코드를 실행하면 개인 교육자료가 자동 표시되지 않습니다.
-
-## 화면과 기능
-
-- `frontend/index.html`: 전체 아카데미 허브. 기존 외부 링크와 교육 영역을 유지합니다.
-- `frontend/education.html`: 강사 워크스페이스. 전체 허브로 돌아가는 메뉴를 제공합니다.
-- 캔디온: 12개월 블록, 날짜·시간대별 수업 및 별도 교육계획.
-- 캔디북: 과목별 슬라이드·Canva 링크 연결, 등록한 로컬 PDF 열람·다운로드.
-- 캔디빛·캔디봄: 교육 분석과 활동 보고서 역할의 AI 대화. 실행 상태에 따라 캐릭터가 움직입니다.
-- 교육 실적 CRUD, 기간별 합계·평균·최댓값·최솟값·추세, JSON 내보내기, 대화 자동 저장·조회·삭제.
-
-외부 링크 상태는 사용자 제공 원본의 분류입니다. 모든 외부 앱의 현재 동작을 검증했다는 뜻은 아닙니다.
-
-캐릭터는 사용자 제공 이미지를 참고한 3D 미래형 전신 PNG 4종입니다. 중장년·시니어·사회복지기관 실무자와 다양한 연령의 학습자를 고려해 안내 글자와 버튼을 키웠습니다. CSS 상태 애니메이션은 동작 줄이기 설정을 따릅니다. [캐릭터 구성과 생성 프롬프트](docs/characters.md)를 참고하세요.
-
-전체 허브와 강사 워크스페이스에는 공통 `academy-design.css`를 적용합니다. 네이비·청록 투컬러 입체 메뉴, 아이보리·골드 선택 표시, 블록형 콘텐츠 카드, 모바일 두 열 메뉴와 밝은/어두운 화면을 지원합니다. 기존 데이터·대화·교재 기능은 그대로 연결됩니다.
-
-홈 배경은 사용자 제공 민들레 PNG를 별도 장식 레이어로 표시합니다. 기본 불투명도는 48%(투명도 52%), 워크스페이스 다크 모드는 35%이며 글자·버튼·캐릭터에는 투명도를 적용하지 않습니다. 전체 허브 홈과 캐릭터 에이전트 홈에만 적용됩니다.
-
-교육계획의 `status=cancelled`는 원래 수업의 폐강을 보존합니다. `replacement_status=confirmed`는 온라인 대체 방식의 확정이며, 대체 날짜·시간은 `replacement_schedule_status`와 별도 날짜·시간 필드로 확인합니다. 미확인 대체 일정을 원본 시간표나 실제 실적으로 간주하지 않습니다. 월별 화면과 AI 요약에도 이 구분을 반영합니다.
-
-## 구현 및 배포 상태
-
-FastAPI·Pydantic, Firestore 접근, GPT Responses API 연결 코드, 바닐라 HTML/CSS/JS 화면과 Render·Vercel 설정을 준비했습니다. API 테스트는 격리된 가상 기록과 모의 AI 응답으로 검증합니다.
-
-Render 무료 백엔드와 Vercel 프론트엔드를 배포했습니다. 인터넷 Firestore 연결, 접속 키 없는 조회 차단, 교육기록 추가·수정·삭제, 대화 저장·전체 메시지 복원을 검증했습니다. Vercel 화면에서 실제 GPT 답변과 후속 질문, 자동 저장을 확인했고 실제 프론트엔드 출처의 CORS 요청도 통과했습니다. 검증용 교육기록은 활성 목록에서 제외하고 원래 합계가 복원됐는지 확인했습니다. 실제 운영자료와 검증 화면은 비공개로 보관합니다.
-
-선택 보너스로 GPT의 교육 요약 Function Calling, 같은 요약을 조회하는 로컬 stdio MCP 서버와 별도 클라이언트, 월별 그래프·추가 통계·JSON 내보내기·강사 화면 다크 모드 토글을 구현했습니다. GPT Actions는 MCP와의 중복 구현을 하지 않습니다. 교재는 연결된 항목부터 사용할 수 있으며 전체 교재 수집은 진행 중입니다.
-
-배포된 [전체 허브](https://candyaflex-edu-agent-hub.vercel.app/)에서 ‘강사 에이전트 실행’을 누릅니다. [강사 화면](https://candyaflex-edu-agent-hub.vercel.app/education)의 ‘연결 설정’에 본인의 개인 접속 키를 입력하면 운영자료를 조회할 수 있습니다. 키는 현재 탭의 세션에만 저장합니다. 이 저장소는 강사 개인용이며 공개 체험 계정이나 다중 사용자 계정 분리는 제공하지 않습니다.
-
-## 기술 스택
-
-| 영역 | 구성 |
+| 접속 | URL |
 |---|---|
-| Backend | Python 3.10+, FastAPI, Pydantic, Uvicorn |
-| Database | Firebase Firestore, firebase-admin |
-| AI | OpenAI Python SDK · Responses API · 읽기 전용 Function Calling |
-| Frontend | HTML/CSS/JavaScript, 프레임워크 없음 |
-| 배포 | Render 백엔드 · Vercel 정적 프론트엔드 |
-| 선택 외부 채널 | 공식 MCP Python SDK 2.3.0 · 로컬 stdio 서버/별도 클라이언트 |
+| 평가용 강사 워크스페이스 | https://candyaflex-edu-agent-hub.vercel.app/education |
+| 전체 아카데미 허브 | https://candyaflex-edu-agent-hub.vercel.app/ |
+| Render 백엔드 | https://candyaflex-edu-api.onrender.com |
+| Swagger UI | https://candyaflex-edu-api.onrender.com/docs |
 
-구조 설계와 여섯 학습목표 설명은 [과제 요구사항 점검](docs/assignment-review.md), 함수 스키마·호출 흐름과 MCP 실행은 [도구 연동](docs/tool-integration.md)에 정리했습니다.
+운영 화면은 개인 접속 키로 보호합니다. **실제 교육자료·교재 PDF·운영 캡처·키는 공개 GitHub에 포함하지 않습니다.** 평가 시에는 강사가 연결한 화면을 시연하거나 승인된 비공개 경로의 제출 자료를 사용합니다. 개인 접속 키를 공개 README에 기재하지 않습니다.
+
+## 필수 네 가지 기능
+
+| 기능 | 구현과 화면 |
+|---|---|
+| 데이터 기반 AI 채팅 | 사용자 질문 → 서버 통계 → 시스템 지시문에 요약 주입 → GPT Responses API → 답변·자동 저장. 채팅 로딩, 기간·개수·평균·최대/최소·교육시간 추세 표시 |
+| 데이터 CRUD | `date`, `value`(해당 교육일의 시간), `memo`를 추가·수정·삭제하고 목록·요약 즉시 갱신. 삭제는 원본 보존 후 활성 목록과 집계에서 제외 |
+| 대화 기록 | 자동 저장 및 POST 저장 API, 목록, 특정 대화 전체 messages 조회·화면 복원, 삭제 |
+| 배포·문서화 | Render FastAPI, Vercel 바닐라 프론트엔드, Swagger, 로컬 실행·환경변수·제출 안내 |
+
+전체 허브의 외부 링크 목록과 별개로 위 네 가지 기능을 하나의 강사 애플리케이션에서 실행합니다. 외부 링크 전체의 최신 동작을 보장하는 것으로 표시하지 않습니다.
+
+## 기술 스택과 구조
+
+- Python 3.10+ / FastAPI / Pydantic / Uvicorn
+- Firebase Firestore / firebase-admin / python-dotenv
+- OpenAI Python SDK Responses API, 읽기 전용 Function Calling
+- HTML / CSS / JavaScript. 프론트엔드 프레임워크 없음
+- Render 백엔드, Vercel 프론트엔드
+
+```text
+backend/app/
+  main.py             앱·CORS·접속 보호·예외 처리
+  models.py           Pydantic 요청 검증
+  routers/            data / conversations / chat / materials / plans
+  services.py         날짜별 통계·GPT 컨텍스트 주입
+  database.py         Firestore 접근·조회 캐시·원본 보존 삭제
+  planning.py         실적과 구분한 교육계획·대체 일정
+  material_storage.py 비공개 PDF 보관·원본 해시 검증
+backend/scripts/      데이터 가져오기·가상 자료·배포 점검
+backend/tests/        실제 키·DB와 분리한 자동 테스트
+frontend/             바닐라 화면·정적 빌드
+```
+
+Firestore의 필수 컬렉션은 `data`, `conversations`입니다. `courses`, `plans`, `materials`, `material_files`는 과정별 집계·일정·교재 확장입니다. 라우터는 요청·응답, 서비스는 집계·AI, 저장소는 DB 접근을 담당합니다.
+
+## 필수 API
+
+| 메서드 | 경로 | 동작 |
+|---|---|---|
+| POST / GET | `/api/data` | 데이터 추가 / 목록 |
+| PUT / DELETE | `/api/data/{key}` | 수정 / 원본 보존 삭제 |
+| GET | `/api/data/summary` | 프롬프트와 화면에서 쓰는 공통 요약 |
+| POST / GET | `/api/conversations` | 대화 저장 / 목록 |
+| GET / DELETE | `/api/conversations/{key}` | 전체 메시지 불러오기 / 삭제 |
+| POST | `/api/chat` | 실제 GPT 대화와 자동 저장 |
+
+`key`는 과제의 `{id}`와 같은 문서 식별자입니다. 대화 목록은 `messages_included=false`를 명시하고, 상세 조회에서 전체 messages를 제공합니다. 데이터 요약은 같은 Python 집계 함수를 직접 재사용하며 서버가 자기 HTTP API를 다시 호출하지 않습니다.
 
 ## 환경변수
 
-서버의 `backend/.env.example`을 복사해 비공개 `.env`를 만듭니다. Vercel에는 공개 가능한 `API_BASE_URL`만 설정합니다.
+서버에서 `backend/.env.example`을 비공개 `backend/.env`로 복사합니다. Vercel에는 공개 가능한 API 서버 주소만 설정합니다.
 
-| 변수 | 위치·용도 |
+| 변수 | 용도 |
 |---|---|
-| OPENAI_API_KEY | 서버 전용 실제 GPT 키 |
-| OPENAI_MODEL | 서버 모델, 기본 `gpt-4.1-mini` |
-| OPENAI_MAX_OUTPUT_TOKENS | 요청당 출력 제한, 기본 1000 |
-| FIREBASE_PROJECT_ID | 서버 Firestore 프로젝트 ID |
-| FIREBASE_SERVICE_ACCOUNT_JSON | 서버 서비스 계정 JSON 또는 파일 경로 |
-| GOOGLE_APPLICATION_CREDENTIALS | 서비스 계정 파일 경로를 사용하는 대안 |
-| FIRESTORE_EMULATOR_HOST | 로컬 에뮬레이터 전용. 인터넷 DB에서는 비움 |
-| APP_ACCESS_TOKEN | 서버의 개인 접속 키, production 필수 |
-| APP_ENV | 로컬 `development`, Render `production` |
-| FIRESTORE_CACHE_SECONDS | 컬렉션 조회 재사용 시간, 기본 900초(0~3600). 대화 목록은 최대 30초 |
-| ALLOWED_ORIGINS | Render에서 허용할 Vercel 출처, 쉼표 구분 |
-| API_BASE_URL | Vercel 빌드의 Render 주소. 선택 MCP 클라이언트도 조회 대상 주소로 사용 |
+| `OPENAI_API_KEY` | 서버 전용 GPT 키 |
+| `OPENAI_MODEL` | 기본 `gpt-4.1-mini` |
+| `OPENAI_MAX_OUTPUT_TOKENS` | 출력 제한, 기본 1000 |
+| `FIREBASE_PROJECT_ID` | Firestore 프로젝트 |
+| `FIREBASE_SERVICE_ACCOUNT_JSON` | 서버 전용 서비스 계정 JSON 또는 파일 경로 |
+| `GOOGLE_APPLICATION_CREDENTIALS` | 서비스 계정 파일 경로를 쓰는 대안 |
+| `APP_ACCESS_TOKEN` | 개인 접속 키, production 필수 |
+| `APP_ENV` | 로컬 `development`, Render `production` |
+| `ALLOWED_ORIGINS` | 허용 Vercel 출처, 쉼표 구분 |
+| `API_BASE_URL` | Vercel 빌드·선택 MCP 클라이언트의 API 주소 |
+| `FIRESTORE_EMULATOR_HOST` | 로컬 에뮬레이터 전용. Render에서는 비움 |
+| `FIRESTORE_CACHE_SECONDS` | 조회 캐시, 기본 900초. 대화 목록 최대 30초 |
 
-## 실행 순서 (Windows PowerShell)
+CORS는 인증을 대신하지 않습니다. 키는 환경변수로 관리하고 URL·코드·공개 캡처에 넣지 않습니다. Firestore 브라우저 직접 읽기·쓰기는 규칙으로 차단하며 서버 Admin SDK로 접근합니다.
 
-Python 3.10 이상, Node.js가 필요합니다. 로컬 Firestore 테스트에는 Java 21과 Firebase CLI도 필요합니다. 아래 명령은 저장소 루트에서 실행합니다.
+## 로컬 실행 (Windows PowerShell)
+
+Python 3.10+, Node.js가 필요합니다. 에뮬레이터는 Java 21과 공식 Firebase CLI를 사용합니다. 저장소 루트에서 실행합니다.
 
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r backend/requirements-dev.txt
 Copy-Item backend/.env.example backend/.env
-```
-
-Java 21을 설치하거나 제공된 도구를 실행합니다. Firebase CLI는 공식 npm 패키지를 사용합니다.
-
-```powershell
 npm install -g firebase-tools
 .\tools\setup-java.ps1
 .\tools\start-emulator.ps1
 ```
 
-다른 PowerShell 창에서 다음을 실행합니다.
-
-```powershell
-.\tools\start-local.ps1
-```
-
-- 전체 허브: `http://127.0.0.1:8010/`
-- 강사 화면: `http://127.0.0.1:8010/education.html`
-- Swagger: `http://127.0.0.1:8010/docs`
-
-실제 GPT 답변을 사용하려면 `backend/.env`에 본인의 `OPENAI_API_KEY`를 설정합니다. 키는 브라우저 코드나 GitHub에 넣지 않습니다. 키가 없으면 AI 준비 안내를 표시하며 가짜 답변을 저장하지 않습니다.
-
-## 데이터 가져오기
-
-실제 자료는 저장소 밖이나 Git에서 제외된 `data/`에 보관합니다. 과정 JSON은 `course_records.json`, 교육일별 JSON은 `data_records.json` 형식입니다. 가져오기 도구는 ID·과정 연결·교육시간 합계를 검증하고 `--apply`를 지정했을 때만 Firestore에 없는 ID를 추가합니다. 기존 수정·삭제 기록을 덮어쓰지 않습니다.
-
-실제 자료 없이 연습하려면 **가상의 120개 시계열 기록**을 로컬에서 생성할 수 있습니다. 결과는 `.local/`에만 저장하며 Git에 포함하지 않습니다.
+위 에뮬레이터 창을 유지하고, 다른 PowerShell 창의 같은 저장소 루트에서 **실제 자료와 무관한 가상 120개 기록**을 생성·가져옵니다.
 
 ```powershell
 .\.venv\Scripts\python.exe backend/scripts/generate_demo.py
@@ -109,17 +101,18 @@ $env:FIREBASE_PROJECT_ID = 'demo-candy-a-academy'
 $env:FIRESTORE_EMULATOR_HOST = '127.0.0.1:8088'
 .\.venv\Scripts\python.exe backend/scripts/import_data.py --data-dir .local/demo-data
 .\.venv\Scripts\python.exe backend/scripts/import_data.py --data-dir .local/demo-data --apply
+.\tools\start-local.ps1
 ```
 
-가상 자료는 실제 교육 실적이나 실제 운영 검증 결과가 아닙니다. 생성기는 Firestore에 직접 쓰지 않습니다.
+- 강사 화면: `http://127.0.0.1:8010/education.html`
+- 전체 허브: `http://127.0.0.1:8010/`
+- Swagger: `http://127.0.0.1:8010/docs`
 
-교육계획은 `backend/scripts/import_plans.py --file <비공개 JSON 경로> --apply`로 별도 `plans` 컬렉션에 저장합니다. 계획시간·예정인원은 실적에 합산하지 않고 보류·폐강·조건부 온라인 대체를 구분합니다. 개별 수업 상태나 재확인 날짜를 공개 코드에 고정하지 않습니다.
+실제 GPT 대화에는 본인의 서버 전용 OpenAI 키가 필요합니다. 키가 없으면 준비 안내를 표시하며 가짜 AI 답변을 저장하지 않습니다. 가상 자료는 실제 교육 실적이나 운영 검증 결과가 아닙니다.
 
-## 집계 기준
+실제 자료는 저장소 밖이나 Git에서 제외한 `data/`에 준비합니다. `import_data.py --data-dir <비공개 폴더> --apply`는 검증 후 없는 ID만 추가하며 기존 수정·삭제 상태를 덮어쓰지 않습니다.
 
-교육 0명·수료 인원 있음은 분석 인원을 수료 인원으로 기록하되 원본 수치를 보존합니다. 축제·에듀버스 만족도 0점은 미입력으로 구분해 평균에서 제외합니다. 승인 교육은 정상 교육이며 승인 근거가 없는 항목을 자동 승인으로 바꾸지 않습니다. 같은 날짜·교육명이라도 시간대가 다르면 각각 보존합니다. 인원 합계는 과정별 연인원이며 고유 인원이나 회차별 출석이 아닙니다.
-
-## 검증
+## 검증과 재현
 
 ```powershell
 Set-Location backend
@@ -130,46 +123,36 @@ node --check frontend/workspace.js
 node frontend/build.mjs
 ```
 
-격리된 자동 테스트 45개는 CRUD·요약·시간대 보존, 교재 경로 보호, 대화 저장·실패 처리, 계획과 실적 분리, 가상 자료 생성과 클라우드/에뮬레이터 연결 선택을 검증합니다. 도구 호출 결과 전달, 허용하지 않은 함수·인수 차단, 호출 횟수 제한도 검사합니다. 자동 테스트에는 실제 운영 데이터나 GPT 과금 호출을 사용하지 않습니다. 빈 `FIRESTORE_EMULATOR_HOST` 값은 클라우드 연결 전에 제거하여 SDK가 빈 에뮬레이터 주소에 연결하지 않도록 합니다.
+자동 테스트 **45개**는 CRUD·대화·요약·Function Calling·일정 분리·PDF 저장과 손상 검증을 확인합니다. `tests/conftest.py`가 해당 pytest 프로세스의 개인 키·DB 연결 설정을 비워 테스트 전용 저장소와 모의 AI를 사용합니다. `.env` 파일 자체는 수정하지 않습니다.
 
-## 배포
+운영 배포의 읽기 전용 점검은 아래 명령으로 재현합니다. `APP_ACCESS_TOKEN`은 비공개 `.env` 또는 환경변수에만 저장합니다.
 
-| 서비스 | 주소·상태 |
-|---|---|
-| Render 백엔드 | https://candyaflex-edu-api.onrender.com |
-| Swagger | https://candyaflex-edu-api.onrender.com/docs |
-| Vercel 프론트엔드 | https://candyaflex-edu-agent-hub.vercel.app/ |
-| 강사 워크스페이스 | https://candyaflex-edu-agent-hub.vercel.app/education |
-| 실제 GPT 답변 | 서버 전용 키 연결 및 배포 화면 검증 완료 |
+```powershell
+.\.venv\Scripts\python.exe backend/scripts/check_deployment.py --api-url https://candyaflex-edu-api.onrender.com --origin https://candyaflex-edu-agent-hub.vercel.app
+```
 
-Render 운영 API는 개인 접속 키 없이는 교육자료를 반환하지 않습니다. 운영자료와 검증 캡처는 이 공개 저장소에 포함하지 않습니다. 교재를 열면 메모와 버전 설명을 표시하며 원본 서비스의 로그인 조건을 유지합니다.
+Swagger·필수 API 스키마·CORS·접속 보호·100개 이상 데이터·입력 검증·대화 상세·프론트 연결을 확인하고 `.local/verification/deployment-readiness.json`에 비공개 결과를 저장합니다. 이 점검은 실제 GPT 호출이나 데이터 변경을 하지 않습니다. 실제 채팅·CRUD·복원 실행은 별도 화면 증빙으로 확인합니다.
 
-1. Render에서 `render.yaml` 기준으로 백엔드를 구성합니다. `FIREBASE_PROJECT_ID`, `FIREBASE_SERVICE_ACCOUNT_JSON`, `OPENAI_API_KEY`, `APP_ACCESS_TOKEN`, `ALLOWED_ORIGINS`를 비공개 환경변수로 설정합니다. 운영 환경에서 에뮬레이터 주소는 비웁니다.
-2. Vercel의 Root Directory는 `frontend`입니다. `API_BASE_URL`에 Render HTTPS 주소를 입력합니다. `frontend/vercel.json`이 빌드와 출력 폴더를 설정합니다.
-3. Render의 `ALLOWED_ORIGINS`에 실제 Vercel 주소를 넣습니다. 강사 화면의 ‘연결 설정’에서 개인 접속 키를 입력합니다. 접속 키는 배포 소스나 `API_BASE_URL`에 넣지 않습니다.
-4. 실제 Firestore 데이터·대화 저장을 확인하고 제출용 캡처를 별도로 준비합니다. 공개 캡처에는 실제 교육 운영자료를 노출하지 않습니다.
+## 배포와 운영
 
-로컬 교재는 `.local/library`에 보관합니다. 현재 인터넷 배포는 링크형 교재를 사용하며 원본 서비스의 로그인·공유 조건을 따릅니다. 선택한 PDF는 비공개 Firestore 파일 보관 기능으로 연결할 수 있습니다. 개인 접속 키로 보호된 API가 전체 파일을 검증한 뒤 PDF 열람·다운로드를 제공합니다. Render의 임시 디스크는 캐시이며 서버 재시작 후에도 비공개 저장소에서 원본을 다시 읽습니다. 파일당 32 MiB·전체 128 MiB의 개인용 한도를 적용합니다. [PDF 교재 연결 안내](docs/pdf-library.md)를 참고하세요.
+Render는 `render.yaml`의 `backend` 루트와 Python 시작 명령을 사용합니다. 서버 비공개 환경변수와 실제 Vercel 출처를 설정합니다. Vercel Root Directory는 `frontend`, 빌드 환경변수는 `API_BASE_URL`입니다. `frontend/vercel.json`이 빌드와 출력 폴더를 지정합니다.
 
-## 제출 스크린샷과 시연
+강사 화면의 **연결 설정**에 개인 접속 키를 입력합니다. 키는 현재 탭 세션에 보관합니다. Swagger는 **Authorize**에서 같은 키를 사용합니다. 무료 Render의 첫 연결은 늦을 수 있으며 화면에서 대기·재시도를 안내합니다.
 
-실제 운영자료의 공개를 제외해 달라는 사용자 요청에 따라 캡처는 공개 GitHub에 올리지 않습니다. 비공개 제출 폴더의 `README.md`에 아래 세 종류의 실제 실행 화면을 삽입합니다.
+API를 통한 저장은 캐시에도 즉시 반영합니다. 외부 가져오기 도구의 변경은 기본 15분의 캐시 만료 또는 서버 재시작 후 표시될 수 있습니다. 한도 오류는 별도 503 안내로 처리하며 빈 데이터로 대체하지 않습니다.
 
-| 필수 증빙 | 확인할 내용 |
-|---|---|
-| 채팅 + 요약 | 질문·실제 GPT 답변과 DATA CONTEXT의 기간·개수·통계·추세 |
-| 데이터 관리 | 검증용 기록 추가/수정 결과가 목록에 표시되고 제거 후 원래 집계로 복원됨 |
-| 대화 기록 | 이전 대화 목록과 ‘대화 이어가기’ 후 전체 메시지 재표시 |
+## 데이터 기준과 추가 기능
 
-평가자가 실제 앱을 조회하려면 개인 접속 키가 필요합니다. 공개 체험 계정을 만들지 않았으며 실제 키를 README에 기재하지 않습니다. 키 전달과 운영자료가 포함된 캡처 제출은 승인된 비공개 경로 또는 직접 시연으로 진행합니다.
+교육 0명이고 수료 인원이 있으면 수료 인원을 분석 인원으로 사용하되 원본 수치를 보존합니다. 축제·에듀버스 만족도 0점은 미입력으로 구분합니다. 교육생 합계는 과정별 연인원입니다. 같은 날짜·교육명이어도 서로 다른 수업은 보존하며, 확인된 동시간대 별개 수업을 자동 병합하지 않습니다. 계획은 실시·승인과 구분해 실적에 합산하지 않습니다.
 
-Firestore 전체 컬렉션을 화면 이동마다 다시 읽지 않도록 서버 프로세스에서 기본 15분 동안 조회 결과를 재사용합니다. 이 API를 통한 추가·수정·삭제는 DB 저장이 성공한 뒤 캐시에도 즉시 반영합니다. 외부 콘솔이나 가져오기 도구로 바꾼 자료는 캐시 만료 또는 서버 재시작 후 반영될 수 있습니다. 대화 목록은 최대 30초만 재사용합니다. 사용량 제한 오류가 발생하면 안내와 60초 재조회 대기를 적용하며, 오류를 빈 데이터로 저장하지 않습니다. 캐시는 서버 재시작 후 새로 읽으며 DB를 대신하는 별도 원본이 아닙니다.
+캔디온(일정)·캔디북(교재)·캔디빛(분석)·캔디봄(보고서)의 3D 전신 PNG와 실행 상태 애니메이션, 월별 블록, 그래프·추가 통계·JSON 내보내기·다크 모드를 제공합니다. 동작 줄이기 설정을 존중합니다. 사용자 제공 로고와 민들레 홈 배경, 투컬러 입체 메뉴를 적용했습니다.
 
-Firestore 무료 일일 한도와 초기화 기준은 [공식 사용량 안내](https://firebase.google.com/docs/firestore/quotas)를 참고합니다. 검증·시연 중 전체 기록을 반복해서 직접 조회하면 무료 한도를 소진할 수 있습니다.
+선택한 PDF는 접속 보호된 Firestore 파일 보관 기능으로 온라인 열람·다운로드합니다. 파일당 32 MiB, 전체 128 MiB의 개인용 한도를 적용하며 Render 임시 디스크는 검증된 캐시입니다. Canva 원본의 공유·로그인 조건은 유지합니다. [PDF 안내](docs/pdf-library.md)를 참고하세요.
 
-Firestore 직접 읽기·쓰기는 규칙으로 차단하고 서버의 Admin SDK로 접근합니다. 배포 환경에서는 개인 접속 키 설정이 필수입니다. 현재는 강사 개인용이며 여러 사용자의 계정별 데이터 분리는 구현하지 않았습니다.
+## 동료평가 제출 자료
 
+[필수 항목·여섯 학습목표 설명](docs/assignment-review.md), [제출 체크리스트](docs/submission-checklist.md), [Function Calling·MCP 호출 흐름](docs/tool-integration.md)을 제공합니다.
 
-온라인 대체 전체 시간표는 `schedule_group_id`로 묶고 폐강 원본의 `replacement_schedule_group_id`와 연결합니다. `replacement_schedule_status=group_confirmed`는 전체 시간표가 확인됐다는 뜻이며 과목별 일대일 배정은 추정하지 않습니다. 온라인 날짜·시간 확정은 실시·승인·전산 등록과 구분하며, 예정 시간이 겹치는 일정은 보존한 채 확인 표시를 제공합니다. 월별 화면의 ‘온라인 확정 일정’ 필터로 시간표만 볼 수 있습니다.
+실제 자료가 담긴 **채팅+요약, CRUD 동작, 대화 목록+복원** 캡처와 실행환경 README는 비공개 제출 ZIP에 포함합니다. 공개 소스에서 접근 키나 실제 운영자료를 찾을 수 없다는 이유를 문서에 명시했습니다. 평가자는 강사의 연결된 화면을 시연받거나 본인의 로컬 가상 자료로 실행할 수 있습니다.
 
-사용자가 별개 수업으로 확인한 동일 시간의 두 일정은 상호 연결된 ID로 보존합니다. 해당 쌍은 화면에서 확인 완료로 안내하고, 확인되지 않은 다른 시간 중복은 따로 표시합니다. AI 컨텍스트에도 현재 날짜·정정 이전 날짜와 별개 수업 확인 정보를 전달합니다.
+현재는 강사 개인용입니다. 여러 사용자 계정 분리, 다른 PC에만 있는 미공유 교재 수집은 확장 범위입니다. MCP는 별도 stdio 클라이언트로 호출을 검증하며 Codex·Cowork 영구 설치를 뜻하지 않습니다. GPT Actions는 MCP와 중복 구현하지 않습니다.
