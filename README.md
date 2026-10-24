@@ -17,11 +17,15 @@
 
 외부 링크 상태는 사용자 제공 원본의 분류입니다. 모든 외부 앱의 현재 동작을 검증했다는 뜻은 아닙니다.
 
-## 구현 상태와 남은 과제
+## 구현 및 배포 상태
 
 FastAPI·Pydantic, Firestore 접근, GPT Responses API 연결 코드, 바닐라 HTML/CSS/JS 화면과 Render·Vercel 설정을 준비했습니다. API 테스트는 격리된 가상 기록과 모의 AI 응답으로 검증합니다.
 
-인터넷 Firestore 연결과 실제 API의 데이터 추가·수정·삭제, 대화 저장·불러오기 검증을 완료했습니다. 실제 운영자료와 검증 화면은 비공개로 보관합니다. Render 무료 백엔드를 배포하고 접속 키 없는 조회 차단, 데이터 CRUD와 대화 저장·복원을 검증했습니다. **실제 GPT 응답과 Vercel 프론트엔드 배포는 아직 완료하지 않았습니다.** 제출 시 실제 AI 실행 화면과 Vercel 주소를 추가해야 합니다. Function Calling과 MCP Server/GPT Actions는 선택 보너스로 아직 구현하지 않았습니다. 전체 허브는 시스템의 밝은/어두운 테마를 따르며 강사 화면의 수동 다크 모드 토글은 없습니다.
+Render 무료 백엔드와 Vercel 프론트엔드를 배포했습니다. 인터넷 Firestore 연결, 접속 키 없는 조회 차단, 교육기록 추가·수정·삭제, 대화 저장·전체 메시지 복원을 검증했습니다. Vercel 화면에서 실제 GPT 답변과 후속 질문, 자동 저장을 확인했고 실제 프론트엔드 출처의 CORS 요청도 통과했습니다. 검증용 교육기록은 활성 목록에서 제외하고 원래 합계가 복원됐는지 확인했습니다. 실제 운영자료와 검증 화면은 비공개로 보관합니다.
+
+Function Calling과 MCP Server/GPT Actions는 선택 보너스로 아직 구현하지 않았습니다. 전체 허브는 시스템의 밝은/어두운 테마를 따르며 강사 화면의 수동 다크 모드 토글은 없습니다. 교재는 연결된 항목부터 사용할 수 있으며 전체 교재 수집은 진행 중입니다.
+
+배포된 [전체 허브](https://candyaflex-edu-agent-hub.vercel.app/)에서 ‘강사 에이전트 실행’을 누릅니다. [강사 화면](https://candyaflex-edu-agent-hub.vercel.app/education)의 ‘연결 설정’에 본인의 개인 접속 키를 입력하면 운영자료를 조회할 수 있습니다. 키는 현재 탭의 세션에만 저장합니다. 이 저장소는 강사 개인용이며 공개 체험 계정이나 다중 사용자 계정 분리는 제공하지 않습니다.
 
 ## 실행 순서 (Windows PowerShell)
 
@@ -94,8 +98,9 @@ node frontend/build.mjs
 |---|---|
 | Render 백엔드 | https://candyaflex-edu-api.onrender.com |
 | Swagger | https://candyaflex-edu-api.onrender.com/docs |
-| Vercel 프론트엔드 | GitHub 저장소 연결 후 배포 예정 |
-| 실제 GPT 답변 | 비공개 API 키 연결 후 검증 예정 |
+| Vercel 프론트엔드 | https://candyaflex-edu-agent-hub.vercel.app/ |
+| 강사 워크스페이스 | https://candyaflex-edu-agent-hub.vercel.app/education |
+| 실제 GPT 답변 | 서버 전용 키 연결 및 배포 화면 검증 완료 |
 
 Render 운영 API는 개인 접속 키 없이는 교육자료를 반환하지 않습니다. 운영자료와 검증 캡처는 이 공개 저장소에 포함하지 않습니다. 교재를 열면 메모와 버전 설명을 표시하며 원본 서비스의 로그인 조건을 유지합니다.
 
@@ -104,6 +109,6 @@ Render 운영 API는 개인 접속 키 없이는 교육자료를 반환하지 �
 3. Render의 `ALLOWED_ORIGINS`에 실제 Vercel 주소를 넣습니다. 강사 화면의 ‘연결 설정’에서 개인 접속 키를 입력합니다. 접속 키는 배포 소스나 `API_BASE_URL`에 넣지 않습니다.
 4. 실제 Firestore 데이터·대화 저장을 확인하고 제출용 캡처를 별도로 준비합니다. 공개 캡처에는 실제 교육 운영자료를 노출하지 않습니다.
 
-로컬 교재는 `.local/library`에 보관합니다. Render 임시 파일 시스템에서는 영구 보관되지 않으므로 배포 전에 인증된 영구 저장소를 연결해야 합니다. 링크형 교재는 원본 서비스의 로그인·공유 조건을 따릅니다.
+로컬 교재는 `.local/library`에 보관합니다. 현재 인터넷 배포는 링크형 교재를 사용하며 원본 서비스의 로그인·공유 조건을 따릅니다. 로컬 PDF 원본은 Render에 배포하지 않았습니다. PDF 원본도 인터넷에서 제공하려면 인증된 영구 저장소를 추가로 연결해야 합니다.
 
 Firestore 직접 읽기·쓰기는 규칙으로 차단하고 서버의 Admin SDK로 접근합니다. 배포 환경에서는 개인 접속 키 설정이 필수입니다. 현재는 강사 개인용이며 여러 사용자의 계정별 데이터 분리는 구현하지 않았습니다.
