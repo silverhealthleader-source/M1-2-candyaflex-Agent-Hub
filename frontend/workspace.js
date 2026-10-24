@@ -1,24 +1,17 @@
 (() => {
   'use strict';
   const agents = {
-    calendar:{name:'모모',role:'일정 매니저',color:'mint',intro:'월별 기록을 펼쳐 날짜와 시간대별 수업을 정리해요.',action:'월별 수업 정리',tag:'SCHEDULE'},
-    materials:{name:'루미',role:'교재 사서',color:'lilac',intro:'흩어진 슬라이드를 과목별로 연결하고 찾아드려요.',action:'교재 슬라이드 찾기',tag:'LIBRARY'},
-    analysis:{name:'코코',role:'교육 분석 비서',color:'peach',intro:'교육시간과 운영 기록에서 의미 있는 흐름을 찾아요.',action:'교육 기록 분석하기',tag:'INSIGHTS'},
-    report:{name:'보리',role:'보고서 도우미',color:'butter',intro:'차곡차곡 쌓인 수업을 활동 보고서로 풀어드려요.',action:'활동 보고서 준비',tag:'REPORT'}
+    calendar:{name:'캔디온',role:'일정 안내',color:'mint',intro:'월별 기록을 펼쳐 날짜와 시간대별 수업을 정리해요.',action:'월별 수업 정리',tag:'SCHEDULE'},
+    materials:{name:'캔디북',role:'교재 안내',color:'lilac',intro:'흩어진 슬라이드를 과목별로 연결하고 찾아드려요.',action:'교재 슬라이드 찾기',tag:'LIBRARY'},
+    analysis:{name:'캔디빛',role:'교육 분석 비서',color:'peach',intro:'교육시간과 운영 기록에서 의미 있는 흐름을 찾아요.',action:'교육 기록 분석하기',tag:'INSIGHTS'},
+    report:{name:'캔디봄',role:'보고서 도우미',color:'butter',intro:'차곡차곡 쌓인 수업을 활동 보고서로 풀어드려요.',action:'활동 보고서 준비',tag:'REPORT'}
   };
   let calendarData=null,selectedMonth=null,subjectGroups=[],slideBlob=null,calendarSequence=0,slideSequence=0;
   const statusLabels={idle:'기다리고 있어요',ready:'함께 시작해요',working:'도와드리는 중',success:'정리가 끝났어요',error:'연결을 확인해요'};
-  const svgStart='<svg class="character-svg" viewBox="0 0 160 160" aria-hidden="true"><ellipse cx="80" cy="145" rx="38" ry="6" fill="#d7d2e3" opacity=".35"/><g class="char-body" stroke="#655b79" stroke-width="2.2" stroke-linejoin="round">';
-  const svgEnd='</g><g class="char-sparkles" stroke="none" fill="#c6ad78"><path d="m132 24 3 7 7 3-7 3-3 7-3-7-7-3 7-3Z"/><circle cx="21" cy="75" r="3"/></g></svg>';
+  const characterAssets={calendar:'candy-on-3d.png',materials:'candy-book-3d.png',analysis:'candy-bit-3d.png',report:'candy-bom-3d.png'};
   function character(id){
-    const eyes='<g class="char-eyes" stroke="none" fill="#5c536b"><ellipse cx="64" cy="69" rx="3.5" ry="5"/><ellipse cx="96" cy="69" rx="3.5" ry="5"/></g>';
-    const blush='<ellipse cx="50" cy="82" rx="8" ry="4" fill="#efaeb3" opacity=".55" stroke="none"/><ellipse cx="110" cy="82" rx="8" ry="4" fill="#efaeb3" opacity=".55" stroke="none"/>';
-    let body='';
-    if(id==='calendar')body='<ellipse cx="59" cy="30" rx="12" ry="25" fill="#b4deca" transform="rotate(-12 59 30)"/><ellipse cx="98" cy="30" rx="12" ry="25" fill="#b4deca" transform="rotate(12 98 30)"/><path d="M49 110q-7 17 4 28h19l5-15h7l5 15h20q9-13-1-28" fill="#a9d4c1"/><ellipse cx="80" cy="73" rx="47" ry="41" fill="#c7e8d9"/>'+eyes+blush+'<path d="m73 82 7 6 7-6" fill="none"/><g class="char-hand"><ellipse cx="122" cy="109" rx="10" ry="16" fill="#b4deca" transform="rotate(-30 122 109)"/></g><rect x="43" y="100" width="63" height="40" rx="7" fill="#fffdf7"/><path d="M43 112h63m-48-16v11m33-11v11" fill="none"/><path d="m61 125 7 6 18-12" fill="none" stroke="#74ac93" stroke-width="4"/>';
-    if(id==='materials')body='<path d="M40 66 40 23l27 18q14-4 27 0l27-18v43" fill="#cab5e5"/><ellipse cx="80" cy="89" rx="48" ry="51" fill="#d6c6ed"/><path d="M49 133q-4 12 13 10m35-10q20 11 17-3" fill="#edc99e"/><ellipse cx="60" cy="70" rx="20" ry="24" fill="#fffaf4"/><ellipse cx="100" cy="70" rx="20" ry="24" fill="#fffaf4"/>'+eyes+'<path d="m73 82 7 10 7-10Z" fill="#edc99e"/><g class="char-hand"><ellipse cx="122" cy="103" rx="11" ry="23" fill="#c4acdf" transform="rotate(-25 122 103)"/></g><path d="M38 108q22-8 42 3 22-11 42-3v31q-20-7-42 3-20-10-42-3Z" fill="#fff9e9"/><path d="M80 111v31M47 119l24 3m-24 6 24 3m18-9 23-3m-23 12 23-3" fill="none" stroke="#b2a0cd"/>';
-    if(id==='analysis')body='<path d="M78 26V13" fill="none"/><circle class="char-antenna" cx="78" cy="12" r="6" fill="#b7d9cf"/><rect x="37" y="34" width="86" height="65" rx="24" fill="#f3c9b5"/><rect x="48" y="45" width="64" height="43" rx="17" fill="#fff7f0"/>'+eyes+'<path d="M71 80q9 6 18 0" fill="none"/><rect x="45" y="100" width="70" height="37" rx="12" fill="#f6d3c3"/><rect x="59" y="109" width="42" height="19" rx="5" fill="#fff9ee"/><path d="m65 122 7-5 7 2 14-7" fill="none" stroke="#92b7a6" stroke-width="3"/><path d="m58 136-2 8m48-8 2 8" fill="none" stroke-width="8"/><g class="char-hand"><path d="m119 104 14-10 5 9-14 13" fill="#f3c9b5"/></g><path d="m41 104-13 8 3 12 14-9" fill="#f3c9b5"/>';
-    if(id==='report')body='<circle cx="46" cy="39" r="17" fill="#e8ca86"/><circle cx="113" cy="39" r="17" fill="#e8ca86"/><ellipse cx="80" cy="73" rx="46" ry="42" fill="#f5dfa7"/>'+eyes+blush+'<ellipse cx="80" cy="83" rx="14" ry="10" fill="#fff4d6" stroke="none"/><path d="m76 79 4 4 4-4m-4 4v5" fill="none"/><path d="M51 106q-10 20-2 34h23l4-13h8l5 13h23q5-19-4-34" fill="#edcf91"/><rect x="47" y="102" width="58" height="39" rx="5" fill="#fffdf4"/><path d="M58 114h32m-32 9h25m-25 8h19" stroke="#c6b58b"/><g class="char-hand"><ellipse cx="121" cy="111" rx="10" ry="17" fill="#f0d49b" transform="rotate(25 121 111)"/><path d="m104 118 21-34 7 4-21 34-9 5Z" fill="#bdabd6"/></g>';
-    return svgStart+body+svgEnd;
+    const agent=agents[id];
+    return `<img class="character-image" src="assets/characters/${characterAssets[id]}" width="1024" height="1536" alt="${agent.name}, ${agent.role} · 3D 미래형 전신 캐릭터" decoding="async" draggable="false">`;
   }
   function charNode(id,className='') {const node=element('div',`agent-character ${className}`);node.dataset.characterId=id;node.dataset.state='idle';node.innerHTML=character(id);return node;}
   function setAgentState(id,status,message,showDock=true){
