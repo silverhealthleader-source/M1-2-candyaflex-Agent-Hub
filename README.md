@@ -152,7 +152,7 @@ API를 통한 저장은 캐시에도 즉시 반영합니다. 외부 가져오기
 
 ## 동료평가 제출 자료
 
-가로 16:9 [발표 웹사이트](https://candyaflex-edu-agent-hub.vercel.app/presentation)는 전체 설명 18장·필수 시연 10장, 발표자 메모, 키보드 이동·전체 화면·인쇄, 실제 서비스 시연 창을 제공합니다. 운영 캡처는 공개 배포에 넣지 않습니다. 비공개 제출 ZIP의 `screenshots` PNG를 ‘발표 준비’에서 선택하면 브라우저 안에서만 표시됩니다. 캡처가 포함된 별도 비공개 발표 ZIP은 오프라인에서도 실행됩니다. [발표 사용법](docs/presentation-guide.md)을 참고하세요.
+큰 제목·2×2 핵심 기능 카드·단계별 도식으로 구성한 가로 16:9 [발표 웹사이트](https://candyaflex-edu-agent-hub.vercel.app/presentation)는 전체 설명 18장·필수 시연 10장, 별도 발표자 메모 패널, 키보드 이동·전체 화면·인쇄, 실제 서비스 시연 창을 제공합니다. 운영 캡처는 공개 배포에 넣지 않습니다. 비공개 제출 ZIP의 `screenshots` PNG를 ‘발표 준비’에서 선택하면 브라우저 안에서만 표시됩니다. 캡처가 포함된 별도 비공개 발표 ZIP은 오프라인에서도 실행됩니다. [발표 사용법](docs/presentation-guide.md)을 참고하세요.
 
 [필수 항목·여섯 학습목표 설명](docs/assignment-review.md), [제출 체크리스트](docs/submission-checklist.md), [Function Calling·MCP 호출 흐름](docs/tool-integration.md)을 제공합니다.
 
