@@ -26,8 +26,9 @@ def chat(body: ChatRequest, repo=Depends(get_repository)):
     summary = build_summary(select_rows(repo.list("data"), body.date_from, body.date_to), repo.list("courses"))
     summary["planning"] = planning_context(select_plans(repo.list("plans"), body.date_from, body.date_to))
     summary["agent_id"] = body.agent_id
-    answer = generate_answer(summary, messages)
-    tool_calls = getattr(answer, "tool_calls", [])
+    generated = generate_answer(summary, messages)
+    tool_calls = getattr(generated, "tool_calls", [])
+    answer = str(generated)
     messages.append({"role": "assistant", "content": answer})
     stamp, key = now(), body.conversation_id or uuid4().hex
     row = {"title": existing["title"] if existing else body.message[:50], "messages": messages, "agent_id": body.agent_id,

@@ -21,6 +21,7 @@ class Settings:
     origins: tuple[str, ...] = ("http://127.0.0.1:8010", "http://localhost:8010")
     access_token: str = ""
     environment: str = "development"
+    cache_seconds: int = 900
 
     @property
     def database_configured(self):
@@ -40,4 +41,5 @@ def get_settings():
         origins=tuple(x.strip() for x in os.getenv("ALLOWED_ORIGINS", "http://127.0.0.1:8010,http://localhost:8010,http://127.0.0.1:4173").split(",") if x.strip()),
         access_token=os.getenv("APP_ACCESS_TOKEN", ""),
         environment=os.getenv("APP_ENV", "development"),
+        cache_seconds=max(0, min(3600, int(os.getenv("FIRESTORE_CACHE_SECONDS", "900")))),
     )

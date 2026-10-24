@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from fastapi.staticfiles import StaticFiles
-from google.api_core.exceptions import GoogleAPICallError
+from google.api_core.exceptions import GoogleAPICallError, ResourceExhausted
 
 from .config import get_settings
 from .database import DatabaseNotConfigured
@@ -53,6 +53,13 @@ def chat_not_ready(request, exc):
 @app.exception_handler(GoogleAPICallError)
 def database_connection_error(request, exc):
     return JSONResponse(status_code=503, content={"detail": "교육 데이터 저장소에 연결하지 못했습니다. 잠시 후 다시 시도해 주세요.", "code": "DATABASE_CONNECTION_FAILED"})
+
+
+@app.exception_handler(ResourceExhausted)
+def database_quota_error(request, exc):
+    return JSONResponse(status_code=503, headers={"Retry-After": "60"},
+                        content={"detail": "교육기록 저장소의 사용량 한도에 도달했습니다. 한도가 초기화된 뒤 다시 연결해 주세요. 연속 새로고침은 잠시 멈춰 주세요.",
+                                 "code": "FIRESTORE_QUOTA_EXCEEDED"})
 
 
 frontend = Path(__file__).resolve().parents[2] / "frontend"
