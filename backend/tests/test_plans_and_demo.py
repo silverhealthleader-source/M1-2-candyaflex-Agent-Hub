@@ -98,3 +98,33 @@ def test_demo_generator_produces_consistent_nonpersonal_records(tmp_path):
     for name, data in [('course_records.json', courses), ('data_records.json', rows)]:
         (tmp_path / name).write_text(json.dumps(data), encoding='utf-8')
     assert len(load('import_data').load_and_validate(tmp_path)[1]) == 120
+
+
+def test_group_replacement_timetable_and_overlap_are_separate_from_actuals(setup):
+    client, repo = setup
+    cancelled, existing = virtual_plans()
+    cancelled.update(status='cancelled', replacement_status='confirmed', replacement_mode='온라인 Zoom',
+                     replacement_schedule_status='group_confirmed', replacement_schedule_group_id='virtual-group')
+    online = []
+    for key, day, start, end in [('virtual-online-a', '2024-11-01', '14:30', '17:30'),
+                                  ('virtual-online-b', '2024-12-02', '09:30', '12:30')]:
+        online.append({**existing, 'id': key, 'date': day, 'start_time': start, 'end_time': end,
+                       'title': '온라인 수업 · 과목 확인 중', 'planned_hours': 3, 'planned_students': None,
+                       'delivery_mode': '온라인 Zoom', 'schedule_status': 'confirmed',
+                       'schedule_group_id': 'virtual-group', 'registration_status': 'not_verified'})
+    for row in [cancelled, existing, *online]:
+        repo.save('plans', row['id'], row)
+    summary = client.get('/api/data/summary').json()
+    plan = summary['planning']
+    assert summary['count'] == summary['metrics']['total'] == 0
+    assert plan['confirmed_online_count'] == 2 and plan['confirmed_online_hours'] == 6
+    assert plan['online_schedule_monthly'] == [{'month': '2024-11', 'count': 1, 'hours': 3}, {'month': '2024-12', 'count': 1, 'hours': 3}]
+    assert plan['zoom_schedule_pending_count'] == 0 and plan['zoom_group_schedule_confirmed_count'] == 1
+    assert plan['schedule_conflict_count'] == 1
+    sessions = {row['date']: row for row in plan['sessions'] if row['schedule_status'] == 'confirmed'}
+    assert len(sessions['2024-11-01']['schedule_conflicts']) == 1
+    assert not sessions['2024-12-02']['schedule_conflicts']
+    assert sessions['2024-11-01']['approval_status'] is None
+    calendar = client.get('/api/data/calendar?year=2024').json()
+    assert calendar['months'][11]['planning']['confirmed_online_count'] == 1
+    assert calendar['hours'] == 0

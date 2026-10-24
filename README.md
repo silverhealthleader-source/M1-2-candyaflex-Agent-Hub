@@ -168,3 +168,6 @@ Firestore 전체 컬렉션을 화면 이동마다 다시 읽지 않도록 서버
 Firestore 무료 일일 한도와 초기화 기준은 [공식 사용량 안내](https://firebase.google.com/docs/firestore/quotas)를 참고합니다. 검증·시연 중 전체 기록을 반복해서 직접 조회하면 무료 한도를 소진할 수 있습니다.
 
 Firestore 직접 읽기·쓰기는 규칙으로 차단하고 서버의 Admin SDK로 접근합니다. 배포 환경에서는 개인 접속 키 설정이 필수입니다. 현재는 강사 개인용이며 여러 사용자의 계정별 데이터 분리는 구현하지 않았습니다.
+
+
+온라인 대체 전체 시간표는 `schedule_group_id`로 묶고 폐강 원본의 `replacement_schedule_group_id`와 연결합니다. `replacement_schedule_status=group_confirmed`는 전체 시간표가 확인됐다는 뜻이며 과목별 일대일 배정은 추정하지 않습니다. 온라인 날짜·시간 확정은 실시·승인·전산 등록과 구분하며, 예정 시간이 겹치는 일정은 보존한 채 확인 표시를 제공합니다. 월별 화면의 ‘온라인 확정 일정’ 필터로 시간표만 볼 수 있습니다.

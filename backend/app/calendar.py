@@ -1,9 +1,10 @@
 from collections import defaultdict
 
-from .planning import select_plans, summarize_plans
+from .planning import select_plans, summarize_plans, with_schedule_conflicts
 
 
 def build_calendar(rows, year=None, plans=()):
+    plans = with_schedule_conflicts(plans)
     all_years = {int(row["date"][:4]) for row in [*rows, *plans]}
     selected_year = year or max(all_years, default=2026)
     months = []
