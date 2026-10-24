@@ -40,7 +40,8 @@
       <li><strong>발표 방식 선택</strong><p>필수 시연은 10장, 전체 설명은 18장입니다. N은 메모, F는 전체 화면, Home·End는 처음·마지막 장입니다. 캡처를 누르면 확대합니다.</p><button id="print-button">가로 슬라이드 인쇄 / PDF 저장</button></li></ol>
     <p class="muted">키는 발표 자료·URL·공개 캡처에 넣지 않습니다. 새로 불러온 캡처는 새로고침 시 해제됩니다.</p>
   </dialog>
-  <dialog id="live-dialog" class="live-dialog"><div class="dialog-head"><div><small>실제 배포 애플리케이션</small><h2 id="live-title">실제 기능 시연</h2></div><div><a id="live-newtab" target="_blank" rel="noopener" class="button">새 탭에서 열기 ↗</a><button data-close="live-dialog">발표로 돌아가기 ×</button></div></div><p class="live-help">화면을 직접 조작해 시연하세요. 미연결이면 화면 안의 ‘연결 설정’을 이용합니다. 무료 Render 첫 연결은 늦을 수 있습니다.</p><iframe id="live-frame" title="실제 강사 애플리케이션 시연" allow="fullscreen"></iframe></dialog>
+  <dialog id="live-dialog" class="live-dialog"><div class="dialog-head"><div><small>실제 배포 애플리케이션</small><h2 id="live-title">실제 기능 시연</h2></div><div><a id="live-newtab" target="_blank" rel="noopener" class="button">새 탭에서 열기 ↗</a><button data-close="live-dialog">발표로 돌아가기 ×</button></div></div><p class="live-help">화면을 직접 조작해 시연하세요. 미연결이면 화면 안의 ‘연결 설정’을 이용합니다. 무료 Render 첫 연결은 늦을 수 있습니다.</p><div id="live-copy-tools" class="live-copy-tools" hidden></div><iframe id="live-frame" title="실제 강사 애플리케이션 시연" allow="fullscreen"></iframe></dialog>
+  <dialog id="copy-dialog"><div class="dialog-head"><h2 id="copy-title">직접 복사</h2><button data-close="copy-dialog">닫기 ×</button></div><p>자동 복사가 제한되어 내용을 선택했습니다. <strong>Ctrl+C</strong>로 복사한 뒤 입력칸에 <strong>Ctrl+V</strong>로 붙여넣으세요.</p><textarea id="copy-content" readonly aria-label="직접 복사할 내용" rows="5"></textarea></dialog>
   <dialog id="image-dialog" class="image-dialog"><div class="dialog-head"><h2>실제 실행 화면 확대</h2><button data-close="image-dialog">닫기 ×</button></div><div id="enlarged-evidence"></div></dialog>
   <div id="announcement" class="announcement" role="status" hidden></div>
 </body>

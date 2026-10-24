@@ -6,6 +6,23 @@
   const app = location.protocol === 'file:' ? 'https://candyaflex-edu-agent-hub.vercel.app/education' : 'education.html';
   const api = 'https://candyaflex-edu-api.onrender.com';
   const repo = 'https://github.com/silverhealthleader-source/M1-2-candyaflex-Agent-Hub';
+  const today = () => {const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
+  const demoCopy = {
+    question:{label:'시연 질문',text:'전체 교육일별 기록의 개수와 총 교육시간을 알려주세요. 예정된 교육계획은 실적에서 제외해주세요.'},
+    title:{label:'교육명',text:'[시연용] 실제 교육 아님'},
+    date:{label:'오늘 날짜',text:today},
+    hours:{label:'추가 교육시간',text:'1'},
+    memo:{label:'수업 내용·메모',text:'동료평가 기능 확인용 임시 기록 · 실제 교육 아님. 검증 후 삭제합니다.'},
+    updatedHours:{label:'수정 교육시간',text:'2'},
+    updatedMemo:{label:'수정 메모',text:'동료평가 시연용 임시 기록 · 1시간에서 2시간으로 수정 확인. 실제 교육이 아니며 검증 후 삭제합니다.'},
+    install:{label:'MCP 설치 명령어',text:'./.venv/Scripts/python.exe -m pip install -r backend/requirements-mcp.txt'},
+    mcp:{label:'MCP 검증 명령어',text:'./.venv/Scripts/python.exe backend/scripts/verify_mcp.py'},
+    frontend:{label:'강사 화면 주소',text:'https://candyaflex-edu-agent-hub.vercel.app/education'},
+    swagger:{label:'Swagger 주소',text:api+'/docs'},
+    github:{label:'GitHub 주소',text:repo}
+  };
+  const copyButton = (key,label='복사') => `<button type="button" class="copy-button" data-copy="${key}" aria-label="${escape(demoCopy[key]?demoCopy[key].label+' 복사':label)}">${label}</button>`;
+  const copyFields = () => `<div class="copy-fields">${['title','date','hours','memo'].map(key=>`<div class="copy-field"><div><span>${demoCopy[key].label}</span><strong>${escape(typeof demoCopy[key].text==='function'?demoCopy[key].text():demoCopy[key].text)}</strong></div>${copyButton(key)}</div>`).join('')}</div>`;
   const action = (view, text='실제 화면 실행 ↗') => `<button class="action primary" data-live="${view}">${text}</button>`;
   const external = (url,text) => `<a class="action" href="${url}" target="_blank" rel="noopener">${text} ↗</a>`;
   const card = (title,text,num='',tag='') => `<article class="card">${num?`<span class="num">${num}</span>`:''}<h3>${title}</h3><p>${text}</p>${tag?`<div class="tag">${tag}</div>`:''}</article>`;
@@ -49,19 +66,16 @@
       body:`<div class="flow">${flowBox('웹 화면','입력, 로딩, 목록, 시각화를 담당합니다.','frontend/app.js')}${flowBox('라우터','URL·메서드·요청·응답을 담당합니다.','app/routers/')}${flowBox('서비스','통계 계산과 GPT 호출을 담당합니다.','app/services.py')}${flowBox('저장소','Firestore 문서와 조회 캐시를 관리합니다.','app/database.py')}</div><div class="cards two" style="height:auto;margin-top:1.5cqw">${card('검증은 저장 전에','Pydantic 요청 모델이 날짜·시간·메모 형식을 확인합니다.','', 'app/models.py')}${card('집계는 한 곳에서','요약 API와 GPT 컨텍스트가 같은 build_summary를 사용합니다.','', '화면과 답변의 기준 일치')}</div>`,
       say:'라우터는 HTTP 요청을 받고, 서비스는 분석과 AI 처리를 하며, 저장소는 Firestore를 다룹니다. Pydantic 모델은 입력을 검증합니다. 이렇게 나누면 DB나 화면과 별개로 통계 로직을 시험할 수 있습니다.',do:['GitHub의 backend/app 구조를 열어 main.py, models.py, routers, services.py, database.py를 보여줍니다.'],result:'파일을 나눈 기준과 그 장점을 설명합니다.'},
     {id:'chat',section:'필수 시연 1',title:'질문을 보내고, 수치와 답변을 함께 봅니다',lead:'강사 AI 비서에서 현재 데이터 요약을 반영한 실제 GPT 답변을 확인합니다.',core:true,
-      body:`<div class="split wide"><div>${steps([['전체 기간을 선택','오른쪽 DATA CONTEXT의 기간·기록 수를 확인합니다.'],['질문 1개 보내기','“교육기록의 개수와 총 교육시간을 알려주세요.”'],['답변과 요약 비교','로딩, 전송 중 비활성화, 실제 수치를 확인합니다.']])}${action('chat')}</div>${evidence(['chat','loading'])}</div>`,
+      body:`<div class="split wide"><div>${steps([['전체 기간을 선택','오른쪽 DATA CONTEXT의 기간·기록 수를 확인합니다.'],['질문 복사 후 붙여넣기','아래 ‘질문 복사’를 누르고 입력창에 Ctrl+V로 붙여넣습니다.'],['답변과 요약 비교','질문을 보낸 뒤 로딩과 실제 수치를 확인합니다.']])}<div class="demo-actions">${copyButton('question','질문 복사')}${action('chat')}</div></div>${evidence(['chat','loading'])}</div>`,
       say:'자연어로 교육기록의 개수와 총 시간을 질문하겠습니다. 응답을 기다리는 동안 로딩이 표시되고, 답변이 도착하면 오른쪽 요약과 숫자가 같은지 확인합니다. 이 답변은 실제 GPT API 결과입니다.',do:['강사 AI 비서를 열고 새 대화에서 질문을 보냅니다.','오른쪽 요약의 기간·개수·합계·평균·최대/최소·교육시간 추세와 비교합니다.','실제 요청이 과금될 수 있으므로 시연 질문은 소수로 진행합니다.'],result:'질문+로딩+실제 답변+DATA CONTEXT를 한 흐름으로 보여줍니다.',fallback:'서버가 지연되면 실제 실행 검증 캡처의 ‘답변’과 ‘로딩’ 탭을 보여주며 확인 시점을 설명합니다.'},
     {id:'context',section:'학습목표 5',title:'서버가 요약을 시스템 지시문에 넣습니다',lead:'Firestore의 데이터를 요약해 GPT가 답할 근거로 전달합니다.',
       body:`<div class="flow">${flowBox('요약 조회','선택 기간에 맞는 교육시간 통계를 계산합니다.','build_summary','01')}${flowBox('맥락 전달','요약 JSON을 시스템 지시문과 함께 전달합니다.','instructions','02')}${flowBox('GPT 응답','질문과 최근 대화를 함께 보내 답변을 생성합니다.','Responses API','03')}${flowBox('자동 저장','사용자·AI 메시지를 대화 문서에 저장합니다.','conversations','04')}</div><div class="split" style="height:auto;margin-top:1.6cqw"><div class="talk-prompt">“서버가 계산한 요약을<br>GPT가 참고하도록 전달합니다.”</div><div class="callout"><strong>설명할 핵심</strong>화면과 AI가 같은 요약 기준을 사용합니다.<br>GPT가 Firestore를 자동으로 읽는 구조가 아닙니다.<br>요약 API의 Python 함수를 직접 재사용합니다.</div></div>`,
       say:'컨텍스트 주입은 서버가 계산한 요약 JSON을 GPT의 instructions에 넣는 방식입니다. 모델을 재학습하는 것이 아닙니다. 요약 API와 동일한 함수를 재사용하므로 서버가 자기 HTTP API를 다시 호출할 필요는 없습니다.',do:['services.py의 요약과 GPT 호출 흐름을 설명합니다.','대화가 성공하면 conversations에 자동 저장되는 지점을 연결해 설명합니다.'],result:'컨텍스트 주입과 저장 흐름을 설명합니다.'},
     {id:'create',section:'필수 시연 2',title:'시연용 교육기록을 하나 추가합니다',lead:'입력은 date·value·memo이며, 저장 후 목록과 요약이 갱신됩니다.',core:true,
-      body:`<div class="split wide"><div><div class="example-label">기능 시연용 입력 예시</div><pre class="schema">date: 오늘 날짜
-value: 1
-memo: 동료평가 시연용
-      실제 교육 아님</pre><p class="talk-prompt">오른쪽 위<br><strong>교육 기록 추가</strong>를 누릅니다.</p>${action('data','교육 실적 관리 실행 ↗')}</div>${evidence(['create'])}</div>`,
+      body:`<div class="split wide"><div><div class="example-label">항목별 복사 후 입력칸에 Ctrl+V</div>${copyFields()}<p class="copy-hint">교육 방식은 ‘기타’를 선택하고 교육생 수는 0으로 둡니다.</p>${action('data','교육 실적 관리 실행 ↗')}</div>${evidence(['create'])}</div>`,
       say:'실제 교육과 구분하기 위해 제목을 시연용으로 작성하겠습니다. 날짜, 한 시간의 value, 시연 메모를 입력하고 저장합니다. 목록에 새 기록이 나타나고 총 시간이 늘어나는지 확인합니다.',do:['기록 제목은 “[시연용] 실제 교육 아님”으로 입력합니다.','교육 기록 추가에서 오늘 날짜, 1시간, 시연용 메모를 저장합니다.','저장 후 목록과 요약의 변화, 생성된 문서 ID를 확인합니다.'],result:'POST 저장 후 GET 목록과 집계에 반영됩니다.'},
     {id:'update-delete',section:'필수 시연 2',title:'같은 기록을 수정하고 삭제합니다',lead:'삭제는 원본을 보존하고 활성 목록과 집계에서 제외합니다.',core:true,
-      body:`<div class="split wide"><div>${steps([['수정','방금 만든 기록 오른쪽 ‘수정’에서 1시간을 2시간으로 바꿉니다.'],['삭제','같은 시연용 기록의 ‘삭제’를 누르고 확인합니다.'],['원래 합계 확인','시연 전 기록 수와 교육시간으로 돌아왔는지 확인합니다.']])}${action('data')}</div>${evidence(['update','remove','deleted'])}</div>`,
+      body:`<div class="split wide"><div>${steps([['수정','방금 만든 기록 오른쪽 ‘수정’에서 1시간을 2시간으로 바꿉니다.'],['삭제','같은 시연용 기록의 ‘삭제’를 누르고 확인합니다.'],['원래 합계 확인','시연 전 기록 수와 교육시간으로 돌아왔는지 확인합니다.']])}<div class="demo-actions">${copyButton('updatedHours','2시간 복사')}${copyButton('updatedMemo','수정 메모 복사')}</div>${action('data')}</div>${evidence(['update','remove','deleted'])}</div>`,
       say:'같은 문서 ID의 교육시간을 두 시간으로 수정하겠습니다. 다음에는 이 시연 기록만 삭제합니다. deleted=true로 원본을 보존하고 조회와 통계에서 제외하므로 원래 실적 합계로 돌아옵니다.',do:['실제 운영기록이 아닌 방금 만든 시연 기록을 정확히 선택합니다.','수정·저장 후 같은 기록의 삭제를 확인합니다.','최종 검증에서는 시연 전후의 전체 요약 JSON이 정확히 일치했습니다.'],result:'PUT·DELETE가 목록·집계에 반영되고 기존 교육 실적은 유지됩니다.'},
     {id:'history',section:'필수 시연 3',title:'저장된 대화 전체를 다시 불러옵니다',lead:'목록에서는 대화 제목을, 상세 조회에서는 전체 messages를 받습니다.',core:true,
       body:`<div class="split wide"><div>${steps([['이전 대화 기록 열기','앞에서 질문한 대화 제목을 찾습니다.'],['대화 이어가기 누르기','해당 카드의 버튼을 선택합니다.'],['복원 결과 확인','질문·답변 전체와 ‘저장된 대화를 불러왔습니다’를 확인합니다.']])}${action('history')}</div>${evidence(['history','restored'])}</div>`,
@@ -73,8 +87,7 @@ memo: 동료평가 시연용
       body:`<div class="cards three">${card('Pydantic 검증','날짜 형식·교육시간 범위·메모·NaN·추가 필드를 저장 전에 검사합니다. 잘못된 입력은 422로 응답합니다.','01','models.py')}${card('Firestore CRUD','data와 conversations 문서를 ID로 다룹니다. 삭제 원본을 보존하고 API 저장 후 조회 캐시를 갱신합니다.','02','database.py')}${card('CORS와 키','Vercel 출처를 허용하고 API는 Bearer 키로 보호합니다. OpenAI·Firebase 키는 서버 비공개 환경변수에 둡니다.','03','CORS는 인증과 별개')}</div>`,
       say:'프론트 검증에 더해 서버 Pydantic 모델이 잘못된 입력을 막습니다. Firestore 문서는 ID로 다룹니다. CORS는 브라우저 출처를 허용하는 기능이고 데이터 접근 인증은 별도 접속 키가 담당합니다. OpenAI와 Firebase 키는 서버에만 둡니다.',do:['Swagger Schema로 요청 형식과 422 응답을 설명합니다.','환경변수 예시 파일의 변수 이름만 보여주고 실제 .env나 키 파일은 열지 않습니다.'],result:'검증 이유, Firestore CRUD 방법, CORS·환경변수·키 관리의 필요성을 설명합니다.'},
     {id:'tools',section:'선택 보너스',title:'Function Calling과 MCP로 요약을 조회합니다',lead:'같은 읽기 전용 요약 기능을 두 호출 경로로 검증했습니다.',
-      body:`<div class="cards two" style="height:auto">${card('GPT Function Calling','수치 확인이 필요하면 get_data_summary({})를 요청합니다. 서버가 집계를 반환하고 GPT가 최종 답변을 만듭니다.','01','호출 이름·빈 인수·기간을 대화에 저장')}${card('별도 stdio MCP 클라이언트','클라이언트가 MCP 서버 프로세스를 시작해 tools/list·tools/call을 실행합니다. 서버가 보호된 Render 요약 API를 조회합니다.','02','공개 MCP 포트 없이 호출 흐름 검증')}</div><pre class="schema" style="margin-top:1.5cqw">./.venv/Scripts/python.exe -m pip install -r backend/requirements-mcp.txt
-./.venv/Scripts/python.exe backend/scripts/verify_mcp.py</pre><p class="flow-caption">필수 기능 시연 후 설명합니다. MCP 또는 GPT Actions 중 한 방식이면 됩니다.<br>Codex·Cowork의 영구 연결 설정을 완료했다는 뜻은 아닙니다.</p>`,
+      body:`<div class="cards two" style="height:auto">${card('GPT Function Calling','수치 확인이 필요하면 get_data_summary({})를 요청합니다. 서버가 집계를 반환하고 GPT가 최종 답변을 만듭니다.','01','호출 이름·빈 인수·기간을 대화에 저장')}${card('별도 stdio MCP 클라이언트','클라이언트가 MCP 서버 프로세스를 시작해 tools/list·tools/call을 실행합니다. 서버가 보호된 Render 요약 API를 조회합니다.','02','공개 MCP 포트 없이 호출 흐름 검증')}</div><div class="command-copy"><code>${demoCopy.install.text}</code>${copyButton('install','설치 명령 복사')}<code>${demoCopy.mcp.text}</code>${copyButton('mcp','검증 명령 복사')}</div><p class="flow-caption">프로젝트 루트의 PowerShell에 붙여넣습니다. 기존 비공개 연결 설정이 필요합니다.<br>MCP는 별도 클라이언트 검증이며 영구 호스트 설치를 뜻하지 않습니다.</p>`,
       say:'Function Calling은 GPT가 필요할 때 정해진 도구 스키마를 선택하는 방식입니다. 실제 대화에서 요약 도구 호출을 확인했습니다. MCP는 별도 클라이언트와 서버 프로세스 간 호출을 검증했습니다. 둘 모두 같은 서버 계산 요약을 사용합니다.',do:['README의 도구 연동 문서에서 스키마·호출 목적·단계를 보여줍니다.','필요하면 프로젝트 루트에서 안내된 명령을 실행합니다. API_BASE_URL과 기존 APP_ACCESS_TOKEN은 비공개 환경변수로 준비합니다.','운영 검증 결과는 .local/verification/mcp-client.json에 보관합니다.'],result:'어떤 질문에서 어떤 도구를 호출하고 결과를 어떻게 답변에 사용했는지 설명합니다.'},
     {id:'ux',section:'선택 보너스',title:'통계·그래프·내보내기로 결과를 살펴봅니다',lead:'분석 결과를 읽기 쉽고 다시 활용할 수 있도록 확장했습니다.',
       body:`<div class="split wide"><div>${checklist(['<strong>추가 지표</strong><br>교육시간 외 교육일·과정별 연인원 등을 구분합니다.','<strong>월별 그래프</strong><br>교육시간의 흐름과 변화를 보여줍니다.','<strong>JSON 내보내기</strong><br>현재 기간 데이터를 내려받습니다.','<strong>다크 모드</strong><br>밝게·어둡게 전환하고 선택을 보관합니다.'])}${action('dashboard','대시보드 실행 ↗')}</div>${evidence(['dark'])}</div>`,
@@ -102,6 +115,26 @@ memo: 동료평가 시연용
   const base=window.REVIEW_EVIDENCE_BASE;
   if(base)for(const spec of Object.values(evidenceSpecs))evidenceSources.set(spec.name,base+spec.name);
   function announce(message){$('#announcement').textContent=message;$('#announcement').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#announcement').hidden=true,4500);}
+  function resolveCopy(key){
+    const slide=slides[visible[current]];
+    if(key==='speech')return {label:'발표문',text:slide.say};
+    if(key==='directions')return {label:'시연 순서',text:slide.do.map((item,i)=>`${i+1}. ${item}`).join('\n')};
+    const item=demoCopy[key];return item?{label:item.label,text:typeof item.text==='function'?item.text():item.text}:null;
+  }
+  function fallbackCopy(text){
+    const active=document.activeElement,field=document.createElement('textarea');field.value=text;field.readOnly=true;field.style.cssText='position:fixed;left:-9999px;top:0;opacity:0';
+    // A focused control must be inside the open modal to avoid the focus trap.
+    const parent=$$('dialog').find(dialog=>dialog.open)||document.body;parent.append(field);
+    try{field.focus();field.select();return document.execCommand('copy');}catch{return false;}finally{field.remove();active?.focus({preventScroll:true});}
+  }
+  async function copyDemo(key,button){
+    const item=resolveCopy(key);if(!item)return;let copied=false;const previous=button.textContent;button.disabled=true;
+    try{if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(item.text);copied=true;}}catch{}
+    if(!copied)copied=fallbackCopy(item.text);
+    button.disabled=false;
+    if(copied){button.textContent='복사 완료 ✓';announce(`${item.label} 복사 완료. 입력칸을 클릭하고 Ctrl+V로 붙여넣으세요.`);setTimeout(()=>button.textContent=previous,2000);}
+    else{$('#copy-title').textContent=item.label+' 직접 복사';$('#copy-content').value=item.text;$('#copy-dialog').showModal();$('#copy-content').focus();$('#copy-content').select();}
+  }
   function buildFigure(key){
     const spec=evidenceSpecs[key],source=evidenceSources.get(spec.name);
     const frame=document.createElement('button');frame.className='evidence-frame'+(key==='dark'?' evidence-crop':'');frame.type='button';frame.setAttribute('aria-label',spec.label+' 확대');
@@ -121,16 +154,16 @@ memo: 동료평가 시연용
       else{const placeholder=document.createElement('div');placeholder.className='evidence-placeholder';placeholder.innerHTML=`<span class="placeholder-icon" aria-hidden="true">▣</span><strong>실제 화면으로 시연해요</strong><p>${escape(spec.label)}<br>발표 준비에서 비공개 캡처를 불러오거나<br>연결된 서비스 화면을 직접 열어보세요.</p>${action(spec.view)}`;area.append(placeholder);}
     });
   }
-  function renderNotes(){const s=slides[visible[current]];$('#speaker-notes').innerHTML=`<h2>${escape(s.title)} · 발표자 메모</h2><div class="note-grid"><div><h3>이렇게 설명하세요</h3><p>${escape(s.say)}</p><p class="note-result"><strong>확인할 결과:</strong> ${escape(s.result)}</p></div><div><h3>직접 할 동작</h3><ul>${s.do.map(text=>`<li>${escape(text)}</li>`).join('')}</ul>${s.fallback?`<p class="note-fallback">지연 시: ${escape(s.fallback)}</p>`:''}</div></div>`;}
+  function renderNotes(){const s=slides[visible[current]];$('#speaker-notes').innerHTML=`<h2>${escape(s.title)} · 발표자 메모</h2><div class="note-grid"><div><h3>이렇게 설명하세요</h3><p>${escape(s.say)}</p>${copyButton('speech','발표문 복사')}<p class="note-result"><strong>확인할 결과:</strong> ${escape(s.result)}</p></div><div><h3>직접 할 동작</h3><ul>${s.do.map(text=>`<li>${escape(text)}</li>`).join('')}</ul>${copyButton('directions','시연 순서 복사')}${s.fallback?`<p class="note-fallback">지연 시: ${escape(s.fallback)}</p>`:''}</div></div>`;}
   function renderToc(){const list=$('#toc-list');list.replaceChildren();visible.forEach((idx,pos)=>{const s=slides[idx],button=document.createElement('button');button.innerHTML=`<small>${String(pos+1).padStart(2,'0')} · ${s.section}${s.core?' · 필수 코스':''}</small>${s.title}`;button.setAttribute('aria-current',String(pos===current));button.onclick=()=>{show(pos);$('#toc-dialog').close();$('#toc-button').setAttribute('aria-expanded','false');};list.append(button);});}
   function show(pos,writeHash=true){current=Math.max(0,Math.min(visible.length-1,pos));$$('.slide').forEach(el=>el.hidden=Number(el.dataset.slideIndex)!==visible[current]);const s=slides[visible[current]];$('#slide-counter').textContent=`${String(current+1).padStart(2,'0')} / ${visible.length}장`;$('#section-label').textContent=s.section;$('#progress-fill').style.width=`${(current+1)/visible.length*100}%`;$('#previous').disabled=current===0;$('#next').disabled=current===visible.length-1;renderNotes();renderToc();if(writeHash)history.replaceState(null,'',`#${s.id}`);}
   function toggleNotes(){notes=!notes;$('#speaker-notes').hidden=!notes;document.body.classList.toggle('notes-open',notes);$('#notes-button').setAttribute('aria-expanded',String(notes));}
   async function toggleFullscreen(){const entering=!document.body.classList.contains('presenting');document.body.classList.toggle('presenting',entering);$('#exit-presentation').hidden=!entering;try{if(!entering&&document.fullscreenElement)await document.exitFullscreen();else if(entering&&document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen();}catch{if(entering)announce('창 안의 발표 모드를 켰습니다. 브라우저 메뉴에서도 전체 화면을 선택할 수 있습니다.');}}
-  function openLive(view){const names={agents:'강사 화면 연결',chat:'강사 AI 비서',data:'교육 실적 관리',history:'이전 대화 기록',dashboard:'교육운영 대시보드',calendar:'월별 수업 블록',materials:'과목별 교재',swagger:'Swagger API 문서'};const url=view==='swagger'?api+'/docs':app+'#'+view;$('#live-title').textContent=names[view]||'실제 기능 시연';$('#live-frame').src=url;$('#live-newtab').href=url;$('#live-dialog').showModal();}
+  function openLive(view){const names={agents:'강사 화면 연결',chat:'강사 AI 비서',data:'교육 실적 관리',history:'이전 대화 기록',dashboard:'교육운영 대시보드',calendar:'월별 수업 블록',materials:'과목별 교재',swagger:'Swagger API 문서'};const url=view==='swagger'?api+'/docs':app+'#'+view;$('#live-title').textContent=names[view]||'실제 기능 시연';const items=view==='chat'?[['question','질문 복사']]:view==='data'?[['title','교육명 복사'],['date','오늘 날짜 복사'],['hours','1시간 복사'],['memo','메모 복사'],['updatedHours','2시간 복사'],['updatedMemo','수정 메모 복사']]:view==='swagger'?[['swagger','Swagger 주소 복사']]:[];$('#live-copy-tools').innerHTML=items.length?`<span>복사 후 아래 입력칸에 Ctrl+V</span>${items.map(([key,label])=>copyButton(key,label)).join('')}`:'';$('#live-copy-tools').hidden=!items.length;$('#live-frame').src=url;$('#live-newtab').href=url;$('#live-dialog').showModal();}
   $('#previous').onclick=()=>show(current-1);$('#next').onclick=()=>show(current+1);$('#notes-button').onclick=toggleNotes;$('#fullscreen-button').onclick=toggleFullscreen;$('#exit-presentation').onclick=toggleFullscreen;
   $('#course').onchange=()=>{const old=visible[current];visible=slides.map((s,i)=>({s,i})).filter(({s})=>$('#course').value==='all'||s.core).map(({i})=>i);show(Math.max(0,visible.indexOf(old)));};
   $('#toc-button').onclick=()=>{renderToc();$('#toc-dialog').showModal();$('#toc-button').setAttribute('aria-expanded','true');};$('#tools-button').onclick=()=>$('#tools-dialog').showModal();$('#print-button').onclick=()=>{$('#tools-dialog').close();window.print();};
-  document.addEventListener('click',event=>{const live=event.target.closest('[data-live]');if(live)openLive(live.dataset.live);const close=event.target.closest('[data-close]');if(close)$('#'+close.dataset.close).close();});
+  document.addEventListener('click',event=>{const copy=event.target.closest('[data-copy]');if(copy){void copyDemo(copy.dataset.copy,copy);return;}const live=event.target.closest('[data-live]');if(live)openLive(live.dataset.live);const close=event.target.closest('[data-close]');if(close)$('#'+close.dataset.close).close();});
   $('#live-dialog').addEventListener('close',()=>$('#live-frame').removeAttribute('src'));
   $('#toc-dialog').addEventListener('close',()=>$('#toc-button').setAttribute('aria-expanded','false'));
   $('#evidence-input').addEventListener('change',event=>{const accepted=new Set(Object.values(evidenceSpecs).map(s=>s.name));let count=0;for(const file of event.target.files){if(!accepted.has(file.name)||!['image/png',''].includes(file.type))continue;const url=URL.createObjectURL(file);ownedUrls.push(url);evidenceSources.set(file.name,url);count++;}renderEvidence();$('#evidence-status').textContent=`${count}개 캡처를 선택했습니다. 현재 총 ${evidenceSources.size}개를 사용할 수 있습니다. 이미지가 서버에 전송되지 않습니다.`;announce(`${count}개 캡처를 이 브라우저에서 불러왔습니다.`);event.target.value='';});
