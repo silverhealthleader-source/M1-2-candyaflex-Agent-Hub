@@ -6,7 +6,7 @@
     analysis:{name:'캔디빛',role:'교육 분석 비서',color:'peach',intro:'교육시간과 운영 기록에서 의미 있는 흐름을 찾아요.',action:'교육 기록 분석하기',tag:'INSIGHTS'},
     report:{name:'캔디봄',role:'보고서 도우미',color:'butter',intro:'차곡차곡 쌓인 수업을 활동 보고서로 풀어드려요.',action:'활동 보고서 준비',tag:'REPORT'}
   };
-  let calendarData=null,selectedMonth=null,subjectGroups=[],slideBlob=null,calendarSequence=0,slideSequence=0;
+  let calendarData=null,selectedMonth=null,subjectGroups=[],slideBlob=null,calendarSequence=0,slideSequence=0,materialLinkHandled=false;
   const statusLabels={idle:'기다리고 있어요',ready:'함께 시작해요',working:'도와드리는 중',success:'정리가 끝났어요',error:'연결을 확인해요'};
   const characterAssets={calendar:'candy-on-3d.png',materials:'candy-book-3d.png',analysis:'candy-bit-3d.png',report:'candy-bom-3d.png'};
   function character(id){
@@ -120,7 +120,21 @@
       content.append(detail);card.append(time,content);list.append(card);
     }
   }
-  async function loadSubjects(){const response=await api('/api/materials/subjects');subjectGroups=response.items;const options=$('#subject-options');options.replaceChildren();for(const group of subjectGroups){const option=element('option');option.value=group.subject;options.append(option);}renderSubjects();}
+  async function loadSubjects(){
+    const response=await api('/api/materials/subjects');subjectGroups=response.items;
+    const options=$('#subject-options');options.replaceChildren();for(const group of subjectGroups){const option=element('option');option.value=group.subject;options.append(option);}
+    const linked=new URLSearchParams(location.search);
+    if(!materialLinkHandled&&linked.get('subject'))$('#subject-search').value=linked.get('subject').slice(0,200);
+    renderSubjects();
+    if(!materialLinkHandled){
+      materialLinkHandled=true;
+      const part=linked.get('part');
+      if(linked.get('subject')==='미드저니 입문→숙련'&&/^[1-4]$/.test(part||'')){
+        const material=subjectGroups.find(group=>group.subject===linked.get('subject'))?.materials.find(item=>item.title.startsWith(`미드저니 교재 PART ${part} ·`));
+        if(material)await openSlides(material);else toast('선택한 교재를 찾지 못했습니다. 자료실에서 교재 목록을 확인해 주세요.');
+      }
+    }
+  }
   function safeLink(value){try{const url=new URL(value);return url.protocol==='https:'&&!url.username&&!url.password?url.href:null;}catch{return null;}}
   function externalLink(url,label,className='button secondary'){const node=element('a',className,label);node.href=safeLink(url)||'#';node.target='_blank';node.rel='noopener noreferrer';return node;}
   function renderSubjects(){
