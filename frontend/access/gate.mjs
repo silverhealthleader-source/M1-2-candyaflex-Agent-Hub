@@ -24,7 +24,9 @@ function page(message, returnTo, configured, authenticated = false) {
 export function createSiteGate({next, getCode = () => process.env.SITE_ACCESS_CODE || '', getIp = () => 'unknown', now = Date.now} = {}) {
   // Best-effort per-instance throttle; not a distributed rate limiter.
   const failures = new Map();
-  const headers = {'Cache-Control':'private, no-store, max-age=0','CDN-Cache-Control':'no-store','Vercel-CDN-Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer','X-Frame-Options':'DENY','Content-Security-Policy':"default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'"};
+  // no-referrer turns Origin into "null" for browser form POSTs. Keep Origin
+  // for same-site form navigation while withholding referrers from other sites.
+  const headers = {'Cache-Control':'private, no-store, max-age=0','CDN-Cache-Control':'no-store','Vercel-CDN-Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'same-origin','X-Frame-Options':'DENY','Content-Security-Policy':"default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'"};
   function html(message, path, configured, status = 200, authenticated = false) {
     return new Response(page(message, path, configured, authenticated), {status, headers:{...headers,'Content-Type':'text/html; charset=utf-8'}});
   }

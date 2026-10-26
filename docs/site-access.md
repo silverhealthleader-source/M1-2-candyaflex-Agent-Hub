@@ -22,4 +22,6 @@
 
 ## 검증·동료평가
 
-`cd frontend` 후 `npm ci`, `npm test`로 인증 회귀 검사 9개를 실행합니다. 가상 테스트 값은 운영 번호가 아닙니다. 백엔드 테스트는 66개입니다. 동료평가 때는 승인된 비공개 경로로 번호를 공유하거나 본인이 직접 입력한 뒤, 교육 화면의 기존 개인 키로 연결해 시연합니다. 인증 추가 전의 제출 ZIP·캡처 시각과 이후 결과를 구분합니다.
+`cd frontend` 후 `npm ci`, `npm test`로 인증 회귀 검사 10개를 실행합니다. 가상 테스트 값은 운영 번호가 아닙니다. 백엔드 테스트는 66개입니다. 동료평가 때는 승인된 비공개 경로로 번호를 공유하거나 본인이 직접 입력한 뒤, 교육 화면의 기존 개인 키로 연결해 시연합니다. 인증 추가 전의 제출 ZIP·캡처 시각과 이후 결과를 구분합니다.
+
+로그인 페이지는 Referrer-Policy: same-origin을 사용해 브라우저의 정상 폼 POST가 Origin을 유지하도록 합니다. no-referrer는 폼 제출의 Origin을 null로 만들 수 있어 사용하지 않습니다. 서버는 외부 출처와 null Origin을 계속 거절합니다. HTTP 도구로 Origin을 수동 지정한 검사와 실제 브라우저 폼 제출 검사를 구분합니다. [브라우저 동작 근거](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Referrer-Policy#effect_on_the_origin_header)

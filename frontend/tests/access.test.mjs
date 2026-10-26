@@ -59,9 +59,16 @@ test('incorrect codes, forged cookies, expiry, changed codes and cross-host repl
 });
 test('login/logout reject cross-origin and non-POST requests; logout expires cookie',async()=>{
   const {gate,request,login}=setup();assert.equal((await login(synthetic,'/',{Origin:'https://elsewhere.example'})).status,403);
+  assert.equal((await login(synthetic,'/',{Origin:'null'})).status,403);
   for(const path of ['/_access/login','/_access/logout'])assert.equal((await gate(request(path))).status,405);
   const response=await gate(request('/_access/logout',{method:'POST',headers:{Origin:'https://site.example'}}));
   assert.equal(response.status,303);assert.ok(response.headers.get('Set-Cookie').includes('Max-Age=0'));
+});
+test('login document preserves same-origin browser form Origin without exposing cross-site referrers',async()=>{
+  const {gate,request}=setup();
+  const response=await gate(request('/_access'));
+  assert.equal(response.headers.get('Referrer-Policy'),'same-origin');
+  assert.ok((await response.text()).includes('method="post" action="/_access/login"'));
 });
 test('redirects and HTML cannot be injected through returnTo',async()=>{
   const {gate,request,login}=setup();
