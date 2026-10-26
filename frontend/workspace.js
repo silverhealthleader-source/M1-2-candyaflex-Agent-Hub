@@ -6,7 +6,7 @@
     analysis:{name:'캔디빛',role:'교육 분석 비서',color:'peach',intro:'교육시간과 운영 기록에서 의미 있는 흐름을 찾아요.',action:'교육 기록 분석하기',tag:'INSIGHTS'},
     report:{name:'캔디봄',role:'보고서 도우미',color:'butter',intro:'차곡차곡 쌓인 수업을 활동 보고서로 풀어드려요.',action:'활동 보고서 준비',tag:'REPORT'}
   };
-  let calendarData=null,selectedMonth=null,subjectGroups=[],slideBlob=null,calendarSequence=0,slideSequence=0,materialLinkHandled=false;
+  let calendarData=null,selectedMonth=null,subjectGroups=[],slideBlob=null,calendarSequence=0,slideSequence=0,materialLinkHandled=false,pdfViewerCleanup=null;
   const statusLabels={idle:'기다리고 있어요',ready:'함께 시작해요',working:'도와드리는 중',success:'정리가 끝났어요',error:'연결을 확인해요'};
   const characterAssets={calendar:'candy-on-3d.png',materials:'candy-book-3d.png',analysis:'candy-bit-3d.png',report:'candy-bom-3d.png'};
   function character(id){
@@ -151,6 +151,7 @@
   $('#material-form').addEventListener('submit',async event=>{event.preventDefault();const button=$('#material-submit');button.disabled=true;try{const values=Object.fromEntries(new FormData(event.currentTarget));if(!safeLink(values.url))throw new Error('https://로 시작하는 교재 원본 주소를 입력해 주세요.');await api('/api/materials',{method:'POST',body:JSON.stringify(values)});$('#material-dialog').close();await runAgent('materials',loadSubjects);toast('과목에 교재 링크를 연결했습니다.');}catch(error){toast(error.message);}finally{button.disabled=false;}});
   async function openSlides(material){
     const sequence=++slideSequence;
+    if(pdfViewerCleanup){pdfViewerCleanup();pdfViewerCleanup=null;}
     const note=$('#slide-note');note.textContent=material.note||'';note.hidden=!material.note;
     $('#slide-title').textContent=material.title;$('#slide-subject').textContent=material.subject;const stage=$('#slide-stage'),tools=$('#slide-tools');stage.replaceChildren(empty('교재를 준비하고 있어요'));tools.replaceChildren();$('#slide-dialog').showModal();setAgentState('materials','working','선택한 교재를 열고 있어요.');
     if(slideBlob){URL.revokeObjectURL(slideBlob);slideBlob=null;}
@@ -160,9 +161,13 @@
         const response=await fetch(apiBase()+'/api/materials/'+encodeURIComponent(material.id)+'/file',{headers});if(!response.ok){let message='교재 파일을 열 수 없습니다. 서비스 연결을 확인해 주세요.';try{message=(await response.json()).detail||message;}catch{}throw new Error(message);}
         const blob=await response.blob();if(sequence!==slideSequence)return;
         slideBlob=URL.createObjectURL(blob);stage.replaceChildren();
-        if(material.kind==='pdf'){const frame=element('iframe','pdf-slide-frame');frame.src=slideBlob;frame.title=material.title+' PDF 슬라이드';stage.append(frame);}
-        else stage.append(empty('PowerPoint 원본이 준비되었습니다','아래 버튼으로 내려받아 PowerPoint에서 열어보세요.'));
-        const download=element('a','button primary','원본 파일 다운로드');download.href=slideBlob;download.download=material.file_name;tools.append(download);
+        const download=element('a','button primary',material.kind==='pdf'?'PDF 다운로드':'원본 파일 다운로드');download.href=slideBlob;download.download=material.file_name;tools.append(download);
+        if(material.kind==='pdf'){
+          const {mountPdf}=await import('./pdf-viewer.js');
+          const cleanup=await mountPdf(blob,stage,material.title,()=>sequence===slideSequence);
+          if(sequence!==slideSequence){cleanup();return;}
+          pdfViewerCleanup=cleanup;
+        }else stage.append(empty('PowerPoint 원본이 준비되었습니다','아래 버튼으로 내려받아 PowerPoint에서 열어보세요.'));
       }else{
         const pages=(material.preview_pages||[]).filter(page=>!page.expires_at||page.expires_at*1000>Date.now());
         if(pages.length){let current=0;const image=element('img','canva-slide-preview');image.alt=material.title+' 슬라이드 미리보기';image.referrerPolicy='no-referrer';const counter=element('span','slide-counter');const previous=element('button','button secondary','← 이전');const next=element('button','button secondary','다음 →');const paint=()=>{image.src=pages[current].url;counter.textContent=`미리보기 ${current+1} / ${pages.length}${material.page_count?' · 원본 '+material.page_count+'쪽':''}`;previous.disabled=current===0;next.disabled=current===pages.length-1;};previous.onclick=()=>{current--;paint();};next.onclick=()=>{current++;paint();};image.onerror=()=>{stage.replaceChildren(empty('미리보기를 불러올 수 없습니다','원본 열기를 눌러 전체 슬라이드를 확인해 주세요.'));};stage.replaceChildren(image);tools.append(previous,counter,next);paint();}
@@ -173,7 +178,7 @@
       setAgentState('materials','success','교재를 열었어요. 원본의 로그인 조건은 유지됩니다.');
     }catch(error){if(sequence!==slideSequence)return;stage.replaceChildren(empty('교재를 열지 못했습니다',error.message));setAgentState('materials','error',error.message);}
   }
-  $('#slide-dialog').addEventListener('close',()=>{slideSequence++;$('#slide-stage').replaceChildren();if(slideBlob){URL.revokeObjectURL(slideBlob);slideBlob=null;}});
+  $('#slide-dialog').addEventListener('close',()=>{slideSequence++;if(pdfViewerCleanup){pdfViewerCleanup();pdfViewerCleanup=null;}$('#slide-stage').replaceChildren();if(slideBlob){URL.revokeObjectURL(slideBlob);slideBlob=null;}});
   $('#calendar-year').onchange=()=>runAgent('calendar',loadCalendar).catch(error=>toast(error.message));
   $('#plan-status-filter').onchange=renderPlans;
   $('#subject-search').oninput=renderSubjects;$('#connected-only').onchange=renderSubjects;$('#add-material').onclick=()=>openMaterialForm();$('#close-activity').onclick=()=>{$('#agent-activity').hidden=true;};

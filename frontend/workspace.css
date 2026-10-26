@@ -43,6 +43,13 @@
 }
 
 .slide-note{margin:0 0 16px;line-height:1.7;overflow-wrap:anywhere;font-size:13px}
+.pdf-reader{width:100%;min-width:0;background:#e7ebee;padding:12px;border-radius:10px}
+.pdf-reader-toolbar{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:16px;margin-bottom:10px}
+.pdf-reader-toolbar label{font-size:16px;color:#173d52;white-space:nowrap}
+.pdf-reader-toolbar input{width:70px;min-height:44px;text-align:center;border:1px solid #9caeb8;border-radius:8px;background:white;color:#173d52;font-size:16px}
+.pdf-reader-toolbar .button{min-height:44px;font-size:15px}
+.pdf-reader-status{text-align:center;display:block;font-size:13px;color:#324f60;margin-bottom:8px}
+.pdf-reader-canvas{display:block;width:100%;height:auto;background:white;box-shadow:0 3px 12px #18394c26}
 
 /* CandyAflex Academy: full-body 3D artwork stays uncropped in every placement. */
 .agent-card.mint{--agent-accent:#426c58}.agent-card.lilac{--agent-accent:#75528f}.agent-card.peach{--agent-accent:#8d5e48}.agent-card.butter{--agent-accent:#786125}
