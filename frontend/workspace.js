@@ -148,8 +148,28 @@
       const add=element('button','text-button','이 과목에 교재 연결 +');add.onclick=()=>openMaterialForm(group.subject);card.append(add);grid.append(card);
     }
   }
-  function openMaterialForm(subject=''){$('#material-form').reset();$('#material-form').elements.subject.value=subject;$('#material-dialog').showModal();}
-  $('#material-form').addEventListener('submit',async event=>{event.preventDefault();const button=$('#material-submit');button.disabled=true;try{const values=Object.fromEntries(new FormData(event.currentTarget));if(!safeLink(values.url))throw new Error('https://로 시작하는 교재 원본 주소를 입력해 주세요.');await api('/api/materials',{method:'POST',body:JSON.stringify(values)});$('#material-dialog').close();await runAgent('materials',loadSubjects);toast('과목에 교재 링크를 연결했습니다.');}catch(error){toast(error.message);}finally{button.disabled=false;}});
+  let retryMaterialAfterConnection=false;
+  const materialError=element('div','form-error');materialError.id='material-error';materialError.hidden=true;
+  const materialErrorText=element('p');materialErrorText.setAttribute('role','alert');
+  const connectMaterial=element('button','button secondary','접속 키 연결');connectMaterial.type='button';connectMaterial.hidden=true;connectMaterial.onclick=()=>openConnectionSettings();
+  materialError.append(materialErrorText,connectMaterial);$('#material-form .dialog-actions').before(materialError);
+  function openMaterialForm(subject=''){retryMaterialAfterConnection=false;materialError.hidden=true;$('#material-form').reset();$('#material-form').elements.subject.value=subject;$('#material-dialog').showModal();}
+  $('#material-dialog').addEventListener('close',()=>{retryMaterialAfterConnection=false;});
+  window.addEventListener('academy:connected',()=>{if(retryMaterialAfterConnection&&$('#material-dialog').open){retryMaterialAfterConnection=false;$('#material-form').requestSubmit();}});
+  $('#material-form').addEventListener('submit',async event=>{
+    event.preventDefault();const button=$('#material-submit');button.disabled=true;button.textContent='저장 중…';materialError.hidden=true;
+    let saved=false;
+    try{
+      const values=Object.fromEntries(new FormData(event.currentTarget));if(!safeLink(values.url))throw new Error('https://로 시작하는 교재 원본 주소를 입력해 주세요.');
+      await api('/api/materials',{method:'POST',body:JSON.stringify(values)});saved=true;retryMaterialAfterConnection=false;$('#material-dialog').close();
+      $('#subject-search').value=values.subject;await runAgent('materials',loadSubjects);toast('과목에 교재 링크를 연결했습니다.');
+    }catch(error){
+      if(saved){toast('교재는 저장했습니다. 목록 갱신을 위해 새로고침해 주세요.');return;}
+      const needsConnection=error.status===401;retryMaterialAfterConnection=needsConnection;
+      materialErrorText.textContent=needsConnection?'개인 접속 키 연결이 필요합니다. 입력 내용은 유지되며, 연결이 확인되면 저장을 이어갑니다.':error.message;
+      connectMaterial.hidden=!needsConnection;materialError.hidden=false;materialError.scrollIntoView({block:'nearest'});
+    }finally{button.disabled=false;button.textContent='교재 연결하기';}
+  });
   async function openSlides(material){
     const sequence=++slideSequence;
     if(pdfViewerCleanup){pdfViewerCleanup();pdfViewerCleanup=null;}

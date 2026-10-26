@@ -62,7 +62,9 @@ async function api(path, options = {}) {
     try {payload = await response.json();} catch {throw new Error('서비스 주소를 확인해 주세요. 올바른 데이터 응답을 받지 못했습니다.');}
     if (!response.ok) {
       const detail = Array.isArray(payload.detail) ? payload.detail.map(item=>item.msg).join(' / ') : payload.detail;
-      throw new Error(detail || '요청을 처리하지 못했습니다.');
+      const error = new Error(detail || '요청을 처리하지 못했습니다.');
+      error.status = response.status;
+      throw error;
     }
     return payload;
   } catch (error) {
@@ -107,11 +109,13 @@ async function refresh() {
     if (state.view === 'data') await loadData();
     if (state.view === 'history') await loadHistory();
     if (window.AcademyWorkspace && ['calendar','materials'].includes(state.view)) await window.AcademyWorkspace.onNavigate(state.view);
+    return true;
   } catch(error) {
     notice(error.message);
     $('#connection-status').classList.add('disconnected');
     $('#connection-status').lastChild.textContent = '연결 확인 필요';
     $('#recent-list').replaceChildren(empty('교육 기록 연결을 기다리고 있어요','연결되면 최근 수업을 확인할 수 있습니다.'));
+    return false;
   } finally {clearTimeout(slowNotice);$('#refresh-button').disabled = false;}
 }
 function renderSummary() {
@@ -243,9 +247,18 @@ $('#search-form').onsubmit=async event=>{event.preventDefault();state.offset=0;t
 $('#mode-filter').onchange=()=>$('#search-form').requestSubmit();
 $('#previous-page').onclick=async()=>{state.offset=Math.max(0,state.offset-state.limit);try{await loadData();}catch(error){toast(error.message);}};
 $('#next-page').onclick=async()=>{state.offset+=state.limit;try{await loadData();}catch(error){toast(error.message);}};
-$('#settings-button').onclick=()=>{$('#api-url').value=apiBase();$('#access-key').value=sessionStorage.getItem('academy_access_key') || '';$('#settings-dialog').showModal();};
+function settingsError(message){let box=$('#settings-error');if(!box){box=element('p','form-error');box.id='settings-error';box.setAttribute('role','alert');$('#settings-form .dialog-actions').before(box);}box.textContent=message;box.hidden=!message;}
+function openConnectionSettings(){settingsError('');$('#api-url').value=apiBase();$('#access-key').value=sessionStorage.getItem('academy_access_key') || '';if(!$('#settings-dialog').open)$('#settings-dialog').showModal();$('#access-key').focus();}
+$('#settings-button').onclick=openConnectionSettings;
 $('#top-settings-button').onclick=$('#settings-button').onclick;
-$('#settings-form').onsubmit=async event=>{event.preventDefault();const url=$('#api-url').value.trim().replace(/\/$/,'');if(url&&!/^https?:\/\//.test(url)){toast('http:// 또는 https://로 시작하는 서비스 주소를 입력해 주세요.');return;}sessionStorage.setItem('academy_api_url',url);sessionStorage.setItem('academy_access_key',$('#access-key').value.trim());$('#settings-dialog').close();await refresh();};
+$('#settings-form').onsubmit=async event=>{
+  event.preventDefault();const url=$('#api-url').value.trim().replace(/\/$/,'');
+  if(url&&!/^https?:\/\//.test(url)){settingsError('http:// 또는 https://로 시작하는 서비스 주소를 입력해 주세요.');return;}
+  const button=$('#settings-form button[type=submit]');button.disabled=true;button.textContent='연결 확인 중…';settingsError('');
+  sessionStorage.setItem('academy_api_url',url);sessionStorage.setItem('academy_access_key',$('#access-key').value.trim());
+  try{if(await refresh()){$('#settings-dialog').close();window.dispatchEvent(new Event('academy:connected'));}else settingsError($('#notice').textContent||'연결 정보를 확인해 주세요.');}
+  finally{button.disabled=false;button.textContent='연결하기';}
+};
 $('#export-button').onclick=async()=>{try{const data=await api('/api/data/export'+periodQuery());const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json;charset=utf-8'});const url=URL.createObjectURL(blob);const link=element('a');link.href=url;link.download=`academy-data-${state.year || 'all'}.json`;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('교육 데이터를 JSON 파일로 내보냈습니다.');}catch(error){toast(error.message);}};
 window.addEventListener('hashchange',()=>navigate(location.hash.slice(1)));
 async function start(){await refresh();await navigate(location.hash.slice(1)||'agents');}
