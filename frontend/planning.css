@@ -21,4 +21,10 @@
 .plan-replacement{color:#8b6a27}.plan-source{font-size:12px;line-height:1.8;color:#81738b;margin-top:12px}
 .plan-source summary{cursor:pointer;color:#8a719e}.plan-source p{white-space:pre-wrap}.plan-source small{display:block;overflow-wrap:anywhere}
 .plan-footnote{font-size:12px;line-height:1.9;color:#81738b;margin-top:18px}
+.plan-review-note{padding:10px 14px;border-left:3px solid #b58a37;background:var(--surface-soft,#fff8e6);color:var(--text,#624f2b);font-size:13px;line-height:1.8;border-radius:8px}
+.plan-actual-link{padding:10px 14px;border-left:3px solid #398d8e;background:var(--surface-soft,#eaf6f3);color:var(--text,#285b61);font-size:13px;line-height:1.8;border-radius:8px}
+.plan-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:15px}
+.plan-actual-confirmation{padding:14px;background:var(--surface-soft,#eaf6f3);line-height:1.8;border-radius:10px}
+.plan-actual-confirmation input{width:20px;min-height:20px;display:inline-block;vertical-align:middle;margin-right:8px}
+#record-date-filter{max-width:180px}
 @media(max-width:700px){.plan-detail{padding:20px 15px}.plan-heading{display:block}.plan-heading h2{font-size:19px}.plan-heading label{display:block;margin-top:15px}.plan-heading select{max-width:220px}.plan-card{grid-template-columns:1fr;gap:12px;padding:16px}.plan-date{flex-direction:row;align-items:center;gap:12px;flex-wrap:wrap}.plan-date strong{font-size:15px}.plan-date span{font-size:13px}.plan-policy{font-size:12px;padding:13px}.plan-content h3{font-size:15px}.month-plan-count{font-size:10px;padding:4px}}

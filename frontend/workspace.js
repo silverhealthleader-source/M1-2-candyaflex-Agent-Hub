@@ -108,8 +108,11 @@
     const pendingOverlaps=summary.schedule_conflict_pending_count??summary.schedule_conflict_count;
     if(pendingOverlaps)policy.push(`시간이 겹쳐 확인이 필요한 일정 ${pendingOverlaps}쌍이 있습니다. 해당 카드의 확인 표시를 살펴보세요.`);
     if(summary.confirmed_distinct_overlap_count)policy.push(`같은 시간의 별개 수업 ${summary.confirmed_distinct_overlap_count}쌍은 사용자 확인에 따라 각각 유지합니다.`);
+    const reviewed=month.plans.filter(p=>p.source_review_required).length,linked=month.plans.filter(p=>p.actual_record_links?.length).length;
+    if(reviewed)policy.push(`원문 날짜·과목 대조가 필요한 ${reviewed}건은 보류로 표시합니다. 폐강을 뜻하지 않습니다.`);
+    if(linked)policy.push(`기존 실적 ${linked}개 수업에 연결되어 있습니다. 중복 실적을 추가하지 않습니다.`);
     $('#plan-policy').textContent=policy.join(' ');
-    const filter=$('#plan-status-filter').value,items=month.plans.filter(plan=>!filter||(filter==='online'?plan.schedule_status==='confirmed'&&plan.delivery_mode==='온라인 Zoom':plan.status===filter)),list=$('#plan-list');list.replaceChildren();
+    const filter=$('#plan-status-filter').value,items=month.plans.filter(plan=>!filter||(filter==='review'?plan.source_review_required:filter==='online'?plan.schedule_status==='confirmed'&&plan.delivery_mode==='온라인 Zoom':plan.status===filter)),list=$('#plan-list');list.replaceChildren();
     if(!items.length){list.append(empty('이 상태에 해당하는 계획이 없습니다'));return;}
     const labels={scheduled:'등록 계획',held:'보류',completed:'실시·승인 완료',cancelled:'대면 폐강 확정'};
     for(const plan of items){
@@ -123,6 +126,9 @@
       top.append(element('span','plan-status',online?'온라인 일정 확정':labels[plan.status]||plan.status),element('span','plan-institution',plan.region));
       content.append(top,element('h3','',plan.title),element('p','plan-location',`장소: ${plan.institution.replace(/\n/g,' ')||'확인 중'}`),element('p','plan-audience',`${online?'교육 대상':'원본 계획 대상'}: ${plan.audience_raw} · ${plan.delivery_mode}`));
       if(plan.status!=='scheduled'||online)content.append(element('p','plan-status-note',plan.status_note||''));
+      if(plan.source_review_required)content.append(element('p','plan-review-note','원문 확인 필요 · 과목이나 날짜 표기를 대조한 후 실적으로 사용하세요.'));
+      if(plan.actual_record_links?.length)content.append(element('p','plan-actual-link',`기존 실적 연결 · ${plan.actual_record_links.map(r=>`${r.start_time}–${r.end_time} / ${number(r.hours)}시간`).join(', ')} · 승인 여부는 실적 원본 기준`));
+      else if(plan.actual_record_candidates?.length)content.append(element('p','plan-review-note','관련 실적이 있으나 계획 시간과 다릅니다. 기존 기록을 확인하여 중복 등록을 피하세요.'));
       for(const confirmed of [true,false]){
         const overlaps=(plan.schedule_conflicts||[]).filter(other=>Boolean(other.distinct_session_confirmed)===confirmed);
         if(overlaps.length)content.append(element('p',`plan-conflict${confirmed?' confirmed-separate':''}`,`${confirmed?'동시간대 별도 수업 · 사용자 확인 완료':'시간 중복 확인 필요'}: ${overlaps.map(other=>`${other.start_time}–${other.end_time} · ${other.institution||other.title}`).join(' / ')}. ${confirmed?'서로 다른 수업으로 각각 보존합니다.':'진행시간 또는 담당 강사를 확인해 주세요.'}`));
@@ -137,8 +143,33 @@
         content.append(replacement);
       }else if(plan.replacement_condition)content.append(element('p','plan-replacement',plan.replacement_condition));
       const detail=element('details','plan-source');detail.append(element('summary','','교육 내용·출처 보기'),element('p','',plan.content),element('small','',`원본: ${plan.source_file}${Number.isInteger(plan.source_table)?` · 표 ${plan.source_table+1}`:''}${Number.isInteger(plan.source_row)?` · ${plan.source_row+1}행`:''}`));
-      content.append(detail);card.append(time,content);list.append(card);
+      if(plan.source_page)detail.append(element('small','',`PDF ${plan.source_page}쪽`));
+      for(const note of plan.normalization_notes||[])detail.append(element('p','',note));
+      for(const variant of plan.source_variants||[])detail.append(element('p','',`함께 보존한 원문: ${variant.source_file}${variant.source_page?` · ${variant.source_page}쪽`:''} / ${variant.title} / 대상: ${variant.audience_raw}\n${variant.content}`));
+      const actions=element('div','plan-actions');
+      if(plan.actual_record_links?.length||plan.actual_record_candidates?.length){
+        const show=element('button','button secondary',plan.actual_record_links?.length?'연결된 실적 보기':'관련 실적 비교');show.type='button';show.onclick=()=>showPlanResults(plan);actions.append(show);
+      }else if(plan.status!=='cancelled'){
+        const draft=element('button','button secondary','실적 등록 준비');draft.type='button';draft.disabled=Boolean(plan.source_review_required);draft.title=draft.disabled?'원문 날짜·과목을 확인한 뒤 실적에 사용하세요.':'';
+        draft.onclick=async()=>{draft.disabled=true;try{await preparePlanResult(plan);}catch(error){toast(error.message);}finally{draft.disabled=false;}};actions.append(draft);
+      }
+      content.append(detail,actions);card.append(time,content);list.append(card);
     }
+  }
+  async function showPlanResults(plan){
+    const related=plan.actual_record_links?.[0]||plan.actual_record_candidates?.[0];
+    $('#record-search').value=related?.title||plan.title;$('#record-date-filter').value=plan.date;$('#mode-filter').value='';state.offset=0;
+    await navigate('data');$('#view-data').scrollIntoView({behavior:'smooth',block:'start'});
+  }
+  async function preparePlanResult(plan){
+    // Re-check current records. A previous draft save may not be in the plan metadata yet.
+    const response=await api('/api/data?'+new URLSearchParams({date_from:plan.date,date_to:plan.date,limit:1000}));
+    const marker=`[계획 ID: ${plan.id}]`;
+    const existing=response.items.find(r=>(r.memo||'').includes(marker));
+    if(existing){await showPlanResults({...plan,actual_record_links:[{title:existing.course_title}]});toast('이미 이 계획으로 저장한 실적이 있어 기존 기록을 표시합니다.');return;}
+    openRecord({course_title:plan.title.slice(0,200),date:plan.date,value:plan.planned_hours,
+      mode:plan.delivery_mode.includes('온라인')?'온라인':plan.delivery_mode.includes('에듀버스')?'에듀버스':plan.delivery_mode.includes('집합')?'집합':'기타',
+      venue:plan.institution.slice(0,300),memo:`${marker}\n계획 시간: ${plan.start_time}–${plan.end_time}\n원본: ${plan.source_file}\n${plan.content||''}`.slice(0,2000)}, {fromPlan:true});
   }
   async function loadSubjects(){
     const response=await api('/api/materials/subjects');subjectGroups=response.items;

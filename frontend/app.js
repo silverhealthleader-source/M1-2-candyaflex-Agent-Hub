@@ -168,7 +168,10 @@ async function loadData() {
   const extra={limit:state.limit,offset:state.offset};
   if ($('#record-search').value.trim()) extra.search=$('#record-search').value.trim();
   if ($('#mode-filter').value) extra.mode=$('#mode-filter').value;
-  const result=await api('/api/data'+periodQuery(extra));state.rows=result.items;state.total=result.total;
+  const query=new URLSearchParams(periodQuery(extra).slice(1));
+  const selectedDate=$('#record-date-filter').value;
+  if(selectedDate){query.set('date_from',selectedDate);query.set('date_to',selectedDate);}
+  const result=await api('/api/data?'+query);state.rows=result.items;state.total=result.total;
   const body=$('#data-body');body.replaceChildren();
   for(const row of state.rows) {
     const tr=element('tr');const dateCell=element('td','',row.date);if(times(row))dateCell.append(element('small','record-time',times(row)));tr.append(dateCell);
@@ -182,16 +185,21 @@ async function loadData() {
   $('#table-count').textContent=`총 ${number(state.total)}건`;$('#page-caption').textContent=`${Math.floor(state.offset/state.limit)+1} / ${Math.max(1,Math.ceil(state.total/state.limit))} 페이지`;
   $('#previous-page').disabled=state.offset===0;$('#next-page').disabled=state.offset+state.limit>=state.total;
 }
-function openRecord(row=null) {
-  state.edit=row;const form=$('#record-form');form.reset();$('#record-dialog-title').textContent=row?'교육 기록 수정':'교육 기록 추가';
+function openRecord(row=null,{fromPlan=false}={}) {
+  state.edit=fromPlan?null:row;const form=$('#record-form');form.reset();$('#record-dialog-title').textContent=fromPlan?'계획에서 실적 등록 준비':row?'교육 기록 수정':'교육 기록 추가';
   for(const field of ['course_title','date','value','mode','venue','memo','students']) if(row && row[field]!==undefined) form.elements[field].value=row[field];
   if(!row)form.elements.date.value=new Date().toLocaleDateString('en-CA');
   $('#students-field').hidden=Boolean(row?.course_id);form.elements.course_title.disabled=Boolean(row?.course_id);
   $('#record-source-note').textContent=row?.source_file?`원본: ${row.source_file} · 과정 인원과 원본 교육일정은 보존됩니다.`:'';
+  $('#plan-actual-confirmation').hidden=!fromPlan;
+  $('#plan-actual-confirm').required=fromPlan;
+  if(fromPlan){form.elements.students.value='';form.elements.students.required=true;$('#record-source-note').textContent='날짜·시간·장소는 계획 기준 초안입니다. 실제 교육시간과 교육생 수를 확인한 뒤 저장하세요. 계획 인원을 실적에 자동 복사하지 않습니다. 승인 상태도 자동 변경하지 않습니다.';}
+  else form.elements.students.required=false;
   $('#record-dialog').showModal();
 }
 $('#record-form').addEventListener('submit',async event=>{
   event.preventDefault();const form=event.currentTarget;const values=Object.fromEntries(new FormData(form));values.value=Number(values.value);
+  if($('#plan-actual-confirm').required&&!$('#plan-actual-confirm').checked){$('#plan-actual-confirm').reportValidity();return;}
   if(state.edit?.course_id)delete values.students;else values.students=Number(values.students || 0);
   const button=$('#record-submit');button.disabled=true;
   try {await api('/api/data'+(state.edit?'/'+encodeURIComponent(state.edit.id):''),{method:state.edit?'PUT':'POST',body:JSON.stringify(values)});$('#record-dialog').close();await refresh();toast('교육 기록을 저장하고 요약을 갱신했습니다.');}
