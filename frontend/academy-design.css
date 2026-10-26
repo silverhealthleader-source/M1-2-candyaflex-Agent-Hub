@@ -262,6 +262,17 @@ html[data-theme=dark] .academy-portal .mapc{box-shadow:0 5px 0 #081925,0 12px 24
 }
 @media(max-width:380px){.academy-workspace .agent-grid,.academy-portal .map{grid-template-columns:1fr}.academy-workspace .agent-description{min-height:0}.academy-workspace .topbar-right{gap:7px}}
 @media(prefers-reduced-motion:reduce){.academy-portal *,.academy-workspace *{transition:none!important;scroll-behavior:auto!important}.academy-portal button:hover,.academy-workspace button:hover{transform:none}}
+.chat-heading-actions{display:flex;gap:12px;flex-wrap:wrap}
+@media(max-width:680px){
+  .academy-workspace :is(input,textarea,select){font-size:16px;max-width:100%}
+  .academy-workspace :is(.button,.nav-item,.row-actions button){min-height:44px}
+  .academy-workspace .message{font-size:15px;line-height:1.85;overflow-wrap:anywhere}
+  .academy-workspace .chat-top{flex-wrap:wrap;gap:10px}
+  .academy-workspace .saved-indicator{display:block;width:100%;font-size:12px;text-align:left}
+  .academy-workspace .chat-heading-actions{width:100%}
+  .academy-workspace .chat-heading-actions .button{flex:1}
+  .academy-workspace .chat-context{font-size:14px}
+}
 
 /* User-supplied dandelion artwork: only home canvases, never foreground opacity. */
 .academy-portal #pg-home,.academy-workspace #view-agents{

@@ -209,11 +209,26 @@ function confirmDelete(action){state.deleteAction=action;$('#confirm-dialog').sh
 $('#cancel-delete').onclick=()=>{$('#confirm-dialog').close();state.deleteAction=null;};
 $('#confirm-delete').onclick=async()=>{const action=state.deleteAction;$('#confirm-dialog').close();state.deleteAction=null;if(action)try{await action();}catch(error){toast(error.message);}};
 function renderMessages() {
+  updateChatControls();
   const container=$('#messages');
   if(!state.messages.length){$('#chat-welcome').hidden=false;$$('.message',container).forEach(n=>n.remove());return;}
   $('#chat-welcome').hidden=true;$$('.message',container).forEach(n=>n.remove());
   for(const message of state.messages)container.append(element('div',`message ${message.role}`,message.content));
   container.scrollTop=container.scrollHeight;
+}
+function updateChatControls(){
+  $('#send-button').disabled=state.busy;
+  $('#save-chat').disabled=state.busy||!state.conversationId||!state.messages.length;
+}
+async function saveCurrentChat(){
+  if(state.busy||!state.conversationId||!state.messages.length)return;
+  state.busy=true;updateChatControls();$('#save-chat').textContent='저장 중…';
+  try{
+    const saved=await api('/api/conversations',{method:'POST',body:JSON.stringify({id:state.conversationId,
+      title:(state.messages.find(m=>m.role==='user')?.content||'교육 기록 대화').slice(0,50),messages:state.messages})});
+    state.messages=saved.messages;renderMessages();$('#saved-indicator').textContent='✓ 대화를 수동 저장했습니다';toast('현재 대화와 도구 호출 이력을 저장했습니다.');
+  }catch(error){toast(error.message);$('#saved-indicator').textContent='수동 저장 실패 · 다시 시도해 주세요';}
+  finally{state.busy=false;$('#save-chat').textContent='대화 저장';updateChatControls();}
 }
 function newChat(){if(state.busy){toast('현재 답변을 기다린 뒤 새 대화를 시작해 주세요.');return;}state.messages=[];state.conversationId=null;renderMessages();$('#saved-indicator').textContent='대화는 답변 후 자동 저장돼요';navigate('chat');$('#chat-input').focus();}
 async function ask(question) {
@@ -226,9 +241,9 @@ $('#chat-form').addEventListener('submit',async event=>{
   window.AcademyWorkspace?.chatState('working','교육 기록을 바탕으로 답변을 준비하고 있어요.');
   const pending=element('div','message assistant pending','교육 기록을 살펴보고 있어요…');$('#messages').append(pending);$('#messages').scrollTop=$('#messages').scrollHeight;
   const payload={message,conversation_id:state.conversationId,agent_id:state.agentId};if(state.year){payload.date_from=`${state.year}-01-01`;payload.date_to=`${state.year}-12-31`;}
-  try{const response=await api('/api/chat',{method:'POST',body:JSON.stringify(payload)});state.conversationId=response.conversation_id;state.messages.push({role:'assistant',content:response.answer});$('#saved-indicator').textContent='✓ 대화가 저장되었습니다';renderMessages();window.AcademyWorkspace?.chatState('success','답변과 대화를 저장했어요.');}
+  try{const response=await api('/api/chat',{method:'POST',body:JSON.stringify(payload)});state.conversationId=response.conversation_id;if(response.user_message)state.messages[state.messages.length-1].content=response.user_message;state.messages.push({role:'assistant',content:response.answer});$('#saved-indicator').textContent='✓ 대화가 저장되었습니다';renderMessages();if(response.privacy_notice)toast(response.privacy_notice);window.AcademyWorkspace?.chatState('success','답변과 대화를 저장했어요.');}
   catch(error){pending.remove();state.messages.pop();renderMessages();input.value=message;toast(error.message);$('#saved-indicator').textContent='저장되지 않았습니다 · 다시 시도해 주세요';window.AcademyWorkspace?.chatState('error','연결을 확인해 주세요. 답변은 저장되지 않았어요.');}
-  finally{state.busy=false;$('#send-button').disabled=false;input.focus();}
+  finally{state.busy=false;updateChatControls();input.focus();}
 });
 $('#chat-input').addEventListener('keydown',event=>{if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing){event.preventDefault();$('#chat-form').requestSubmit();}});
 async function loadHistory() {
@@ -247,6 +262,7 @@ $$('[data-question]').forEach(button=>button.onclick=()=>ask(button.dataset.ques
 $$('[data-close]').forEach(button=>button.onclick=()=>$('#'+button.dataset.close).close());
 $('#hero-chat').onclick=()=>navigate('chat');$('#report-question').onclick=()=>ask('기록에 근거한 강사 활동 보고서 초안을 작성해 줘.');
 $('#new-chat').onclick=newChat;$('#history-new-chat').onclick=newChat;$('#add-data').onclick=()=>openRecord();
+$('#save-chat').onclick=saveCurrentChat;
 $('#refresh-button').onclick=()=>refresh();
 async function changeYear(event){state.year=event.target.value;state.offset=0;$('#year-filter').value=state.year;$('#chat-year-filter').value=state.year;await refresh();}
 $('#year-filter').onchange=changeYear;
