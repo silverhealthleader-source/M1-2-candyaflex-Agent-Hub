@@ -9,7 +9,7 @@
 | 3 | Firestore 저장·목록 | data 라우터 → Repository → Admin SDK | 임시 POST 201·GET 목록·PUT 200·DELETE 200·Firestore 직접 재조회 |
 | 4 | 데이터 요약 | services.build_summary | 필드·형식·가상 예시, 실제 통계 응답 발췌 |
 | 5 | 대화 저장·불러오기 | chat 및 conversations 라우터 | 저장 목록→특정 ID 전체 messages→화면 복원 |
-| 6 | 모바일 UX | styles.css·workspace.css·academy-design.css | 데스크톱 실사용 캡처. 휴대폰 실기기 터치 검증은 별도 범위 |
+| 6 | 모바일 UX | styles.css·workspace.css·academy-design.css | 390px 브라우저 화면 메뉴 이동·추가/수정/삭제·가로 넘침·16px 입력 확인. 하드웨어 터치는 별도 |
 | 7 | 모듈 책임 분리 | 아래 호출 흐름 | 라우터·서비스·저장소·검증 모델 근거 |
 | 8 | 컬렉션 설계 | 아래 설계 이유 | data와 conversations의 서로 다른 조회·저장 패턴 |
 | 9 | Pydantic | models.py·아래 예시 | 음수 시간 요청 422, 정상 요청 저장 |
@@ -91,7 +91,7 @@ Content-Type: application/json
 
 비용·지연: 요약과 대화가 길수록 입력 토큰이 늘 수 있습니다. 현재 최근 12메시지, 출력 기본 1000토큰(설정 범위 100~4000), SDK timeout=45초, max_retries=1을 사용합니다. 도구 사용 시 논리적 모델 요청은 최대 2번이며 SDK 재시도로 실제 전송 횟수는 더 늘 수 있습니다. 사용자별 일일 과금 상한·월간 요청 할당량은 구현하지 않았습니다.
 
-민감정보: 서버는 원본 PDF나 메모 전체를 일괄 전송하지 않습니다. 하지만 요약의 과목·기관명과 사용자가 입력한 질문에는 개인정보가 포함될 수 있습니다. 주민번호·연락처·개인별 출석 명단은 입력하지 않습니다. 자동 PII 탐지·삭제는 미구현이며, 사람이 비식별화하고 접근 권한을 관리해야 합니다. SDK의 `store=False` 설정을 모든 보관 정책이 없다는 의미로 설명하지 않습니다.
+민감정보: 서버는 원본 PDF나 메모 전체를 일괄 전송하지 않습니다. 하지만 요약의 과목·기관명과 사용자가 입력한 질문에는 개인정보가 포함될 수 있습니다. 주민번호·연락처·개인별 출석 명단은 입력하지 않습니다. 이메일·국내 연락처·주민번호 형식·키 문자열은 정규식으로 가립니다. 이름·주소·문맥상 식별정보 전체를 탐지하는 필터는 아니므로 사람이 비식별화하고 접근 권한을 관리해야 합니다. SDK의 `store=False` 설정을 모든 보관 정책이 없다는 의미로 설명하지 않습니다.
 
 ## 12. 요약 API 호출과 재사용
 
@@ -99,9 +99,9 @@ Content-Type: application/json
 
 ## 13. 대화 저장 타이밍과 형식
 
-자동: `/api/chat`이 기존 대화 조회→사용자 메시지 추가→통계·GPT 처리→assistant 추가→`conversations` 저장을 실행합니다. GPT 오류·빈 답변·출력 한도 미완료이면 정상 assistant 대화를 저장하지 않습니다. 성공 응답은 `answer`, `conversation_id`, `saved=true`, `data_period`, `data_count`, `tool_calls`입니다.
+자동: `/api/chat`이 기존 대화 조회→사용자 메시지 추가→통계·GPT 처리→assistant 추가→`conversations` 저장을 실행합니다. GPT 오류·빈 답변·출력 한도 미완료이면 정상 assistant 대화를 저장하지 않습니다. 성공 응답은 `answer`, `conversation_id`, `saved=true`, `data_period`, `data_count`, `tool_calls`, 가림을 적용한 `user_message`, 해당 시 `privacy_notice`입니다. `save_mode=auto`로 저장합니다.
 
-수동: `POST /api/conversations`는 별도 저장 API입니다. GPT 호출 없이 제공한 `title/messages`를 저장합니다. `id` 생략은 새 문서, 기존 id는 해당 대화 갱신이며 없는 id는 404입니다. 웹의 별도 ‘수동 저장’ 버튼을 구현했다는 뜻은 아닙니다. 수동 저장 모델은 `tool_calls` 입력을 받지 않으며 기존 대화를 수동 덮어쓰면 과거 도구 추적을 보존하지 않는 제한이 있습니다.
+수동: `POST /api/conversations`는 별도 저장 API입니다. GPT 호출 없이 제공한 `title/messages`를 저장합니다. `id` 생략은 새 문서, 기존 id는 해당 대화 갱신이며 없는 id는 404입니다. 웹의 ‘대화 저장’ 버튼은 현재 자동 저장된 대화를 이 API로 재저장합니다. 수동 저장 모델은 클라이언트의 `tool_calls` 입력을 받지 않고 서버에 있던 도구 추적·생성 시각·agent_id를 보존합니다. `save_mode=manual`과 메시지 변경 여부 `messages_edited_manually`를 기록합니다. 도구 추적은 대화에서 실행된 이력이며 수동 변경된 문장의 새 실행 결과를 뜻하지 않습니다.
 
 ```json
 {"title":"가상 수동 저장","messages":[{"role":"user","content":"수동 저장 기능 확인"},{"role":"assistant","content":"GPT 생성이 아닌 저장 API 예시 메시지"}]}
@@ -141,7 +141,7 @@ Render 운영: `ALLOWED_ORIGINS=https://candyaflex-edu-agent-hub.vercel.app`
 
 날짜·유한수·길이·허용 enum·미정의 필드는 Pydantic으로 검사합니다. 요약 문자열은 참고 데이터로 취급하고 안의 지시를 실행하지 않도록 규칙과 데이터 구역을 구분합니다. 도구는 `get_data_summary` 하나의 읽기 전용 기능이며 이름과 `{}` 인수를 서버에서 검증하고 병렬 호출을 끕니다. 금전 지출·외부 발송·DB 삭제를 모델 도구로 제공하지 않습니다.
 
-사람 이름·연락처를 자동 가리는 필터나 공격 탐지 모델은 없습니다. 문구 규칙만으로 모든 악성 입력을 막는다고 주장하지 않습니다. 수치와 기간을 화면에서 확인하고 운영자가 공유 전 내용을 검토합니다.
+국내 연락처·이메일·주민번호 형식·API 키·비공개 키 블록을 가리는 형식 기반 필터가 있습니다. 한국어 조사와 붙은 이메일도 검사합니다. 요약·메시지·도구 결과의 모델 전송 경계와 대화 저장에 적용하며, 날짜와 숫자 통계는 보존합니다. 사람 이름·주소 전체를 탐지하는 기능이나 공격 탐지 모델은 없습니다. 문구 규칙만으로 모든 악성 입력을 막는다고 주장하지 않습니다. 수치와 기간을 화면에서 확인하고 운영자가 공유 전 내용을 검토합니다.
 
 ## 18. 기간 변경·통계 변경 예시
 

@@ -49,7 +49,7 @@ frontend/             바닐라 화면·정적 빌드
 
 Firestore의 필수 컬렉션은 `data`, `conversations`입니다. `courses`, `plans`, `materials`, `material_files`는 과정별 집계·일정·교재 확장입니다. 라우터는 요청·응답, 서비스는 집계·AI, 저장소는 DB 접근을 담당합니다.
 
-`data/{id}`는 **교육일별 실적 문서**로 `date`(ISO 날짜), `value`(시간), `memo`, 과목·방식·장소, 생성/수정 시각, `deleted`를 저장합니다. `conversations/{id}`는 **한 대화 문서**로 `title`, `messages:[{role,content}]`, `agent_id`, 생성/수정 시각, `deleted`를 저장하며 `/api/chat` 자동 저장은 `tool_calls`도 기록합니다. 임의 UUID 문서 ID를 사용하고 원본 가져오기는 재실행 가능한 결정적 ID를 사용합니다.
+`data/{id}`는 **교육일별 실적 문서**로 `date`(ISO 날짜), `value`(시간), `memo`, 과목·방식·장소, 생성/수정 시각, `deleted`를 저장합니다. `conversations/{id}`는 **한 대화 문서**로 `title`, `messages:[{role,content}]`, `agent_id`, 생성/수정 시각, `deleted`를 저장하며 `/api/chat` 자동 저장은 `tool_calls`와 `save_mode=auto`도 기록합니다. 수동 저장은 `save_mode=manual`로 구분합니다. 임의 UUID 문서 ID를 사용하고 원본 가져오기는 재실행 가능한 결정적 ID를 사용합니다.
 
 두 컬렉션을 분리한 이유는 데이터 수정 때 메시지 배열을 다시 쓰지 않고, 대화 목록을 볼 때 전체 교육 원문을 반환하지 않기 위해서입니다. 현재 개인 규모에서는 컬렉션을 서버 캐시에 읽고 Python에서 날짜·방식·검색어로 필터링합니다. **Firestore의 `where(date)` 조회·DB 수준 페이지네이션을 구현했다고 주장하지 않습니다.** 데이터가 커지면 날짜 범위 쿼리·정렬·인덱스로 확장할 수 있습니다. 대화는 전체 복원이 빈번하여 메시지 배열을 한 문서에 보관하며 저장은 최대 100메시지, GPT 입력은 최근 12메시지로 제한합니다. 상세 설계와 조회 경로는 [평가 설명](docs/evaluation-evidence.md#8-firestore-컬렉션-설계)에 있습니다.
 
@@ -84,7 +84,7 @@ Firestore의 필수 컬렉션은 `data`, `conversations`입니다. `courses`, `p
 {"period":{"start":"2026-10-01","end":"2026-10-02"},"count":2,"teaching_days":2,"course_count":2,"metrics":{"total":3,"average":1.5,"max":2,"min":1,"unit":"hours"},"monthly":[{"month":"2026-10","hours":3}],"trend":{"label":"비교할 기록이 부족합니다","percent":null,"metric":"education_hours"}}
 ```
 
-서버는 기간으로 선택한 기록을 `build_summary()`로 계산한 뒤 `generate_answer()`의 `instructions`에 JSON을 붙입니다. 모델 학습을 바꾸는 과정이 아니라 **요청 시 참고 맥락을 제공하는 과정**입니다. 통계가 일관되고 최신 조회값을 쓰기 쉬운 장점이 있지만, 긴 요약은 입력 토큰·지연을 늘리며 원본 누락·잘못된 입력까지 교정하지 못합니다. 모델 답변의 수치도 검산해야 합니다. `planning.sessions`는 최대 80개이며 `sessions_truncated`로 생략을 알립니다. 원본 메모 전체를 일괄 전송하지는 않지만, 개인정보가 담긴 과목명이나 사용자 질문은 외부 AI 요청에 포함될 수 있으므로 사람 이름·연락처를 입력하지 않는 운영 기준을 둡니다. 현재 자동 개인정보 탐지·삭제 기능은 구현하지 않았습니다.
+서버는 기간으로 선택한 기록을 `build_summary()`로 계산한 뒤 `generate_answer()`의 `instructions`에 JSON을 붙입니다. 모델 학습을 바꾸는 과정이 아니라 **요청 시 참고 맥락을 제공하는 과정**입니다. 통계가 일관되고 최신 조회값을 쓰기 쉬운 장점이 있지만, 긴 요약은 입력 토큰·지연을 늘리며 원본 누락·잘못된 입력까지 교정하지 못합니다. 모델 답변의 수치도 검산해야 합니다. `planning.sessions`는 최대 80개이며 `sessions_truncated`로 생략을 알립니다. 원본 메모 전체를 일괄 전송하지는 않지만, 개인정보가 담긴 과목명이나 사용자 질문은 외부 AI 요청에 포함될 수 있으므로 사람 이름·연락처를 입력하지 않는 운영 기준을 둡니다. 연락처·이메일·주민번호 형식·API 키·비공개 키 블록은 AI 전송 경계에서 형식에 따라 가립니다. 이름·주소 등 모든 개인정보를 자동 탐지하는 기능은 아닙니다.
 
 컨텍스트는 데이터 구역과 규칙을 구분하고 그 안의 문구를 명령으로 실행하지 않도록 지시합니다. 읽기 전용 도구 이름과 빈 인수 스키마도 검증합니다. 이는 모든 프롬프트 공격을 차단한다는 보장은 아닙니다. [OpenAI 공식 텍스트 생성 문서](https://developers.openai.com/api/docs/guides/text)의 `instructions` 사용 방식과 [Function Calling 흐름](https://developers.openai.com/api/docs/guides/function-calling)을 참고했습니다.
 
@@ -103,7 +103,7 @@ Invoke-RestMethod -Method Put -Uri "http://127.0.0.1:8010/api/data/$($taskRecord
 Invoke-RestMethod -Method Delete -Uri "http://127.0.0.1:8010/api/data/$($taskRecord.id)" -Headers $taskHeaders
 ```
 
-대화 자동 저장은 `/api/chat` 응답 생성 후 수행합니다. 수동 저장은 별도 `POST /api/conversations`이고 현재 웹 화면은 자동 저장을 사용합니다. 수동 저장은 `title/messages`를 받으며 실제 GPT를 호출하지 않습니다. `id`를 주면 기존 대화를 갱신하고 생략하면 새 문서를 만듭니다. 자동 저장의 `tool_calls`는 이름·인수·호출 근거·분석 기간을 기록하며 도구의 전체 결과 JSON이나 OpenAI 내부 응답 ID 전체를 저장하는 방식은 아닙니다. [자동·수동 저장 타이밍과 형식](docs/evaluation-evidence.md#13-대화-저장-타이밍과-형식)을 참고하세요.
+대화 자동 저장은 `/api/chat` 응답 생성 후 수행합니다. 수동 저장은 별도 `POST /api/conversations`이고 현재 웹 화면은 자동 저장과 ‘대화 저장’ 버튼의 수동 재저장을 제공합니다. 수동 저장은 `title/messages`를 받으며 실제 GPT를 호출하지 않습니다. 기존 대화의 서버 생성 `tool_calls`·생성 시각·담당 에이전트를 유지하고, 메시지 변경 여부를 `messages_edited_manually`로 표시합니다. `id`를 주면 기존 대화를 갱신하고 생략하면 새 문서를 만듭니다. 자동 저장의 `tool_calls`는 이름·인수·호출 근거·분석 기간을 기록하며 도구의 전체 결과 JSON이나 OpenAI 내부 응답 ID 전체를 저장하는 방식은 아닙니다. [자동·수동 저장 타이밍과 형식](docs/evaluation-evidence.md#13-대화-저장-타이밍과-형식)을 참고하세요.
 
 ## 환경변수
 
@@ -169,7 +169,7 @@ node --check frontend/workspace.js
 node frontend/build.mjs
 ```
 
-자동 테스트 **50개**는 CRUD·대화·요약·Function Calling·일정 분리·PDF 저장과 손상 검증을 확인합니다. `tests/conftest.py`가 해당 pytest 프로세스의 개인 키·DB 연결 설정을 비워 테스트 전용 저장소와 모의 AI를 사용합니다. `.env` 파일 자체는 수정하지 않습니다.
+자동 테스트 **62개**는 CRUD·대화·요약·Function Calling·일정 분리·PDF 저장과 손상 검증을 확인합니다. `tests/conftest.py`가 해당 pytest 프로세스의 개인 키·DB 연결 설정을 비워 테스트 전용 저장소와 모의 AI를 사용합니다. `.env` 파일 자체는 수정하지 않습니다.
 
 운영 배포의 읽기 전용 점검은 아래 명령으로 재현합니다. `APP_ACCESS_TOKEN`은 비공개 `.env` 또는 환경변수에만 저장합니다.
 
@@ -177,7 +177,7 @@ node frontend/build.mjs
 .\.venv\Scripts\python.exe backend/scripts/check_deployment.py --api-url https://candyaflex-edu-api.onrender.com --origin https://candyaflex-edu-agent-hub.vercel.app
 ```
 
-Swagger·필수 API 스키마·CORS·접속 보호·100개 이상 데이터·입력 검증·대화 상세·프론트 연결을 확인하고 `.local/verification/deployment-readiness.json`에 비공개 결과를 저장합니다. 이 점검은 실제 GPT 호출이나 데이터 변경을 하지 않습니다. 실제 채팅·CRUD·복원 실행은 별도 화면 증빙으로 확인합니다.
+Swagger·필수 API 스키마·CORS·접속 보호·100개 이상 데이터·입력 검증·대화 상세·프론트 연결을 확인하고 `.local/verification/deployment-readiness.json`에 비공개 결과를 저장합니다. 이 읽기 전용 점검 자체는 실제 GPT 호출이나 데이터 변경을 하지 않습니다. 최종 비공개 ZIP에는 별도의 실제 채팅·390px 화면 CRUD·수동 저장·복원 증빙과 18개 항목별 검증표를 함께 제공합니다.
 
 ## 배포와 운영
 
@@ -210,3 +210,9 @@ API를 통한 저장은 캐시에도 즉시 반영합니다. 외부 가져오기
 실제 자료가 담긴 **채팅+요약, CRUD 동작, 대화 목록+복원** 캡처와 실행환경 README는 비공개 제출 ZIP에 포함합니다. 공개 소스에서 접근 키나 실제 운영자료를 찾을 수 없다는 이유를 문서에 명시했습니다. 평가자는 강사의 연결된 화면을 시연받거나 본인의 로컬 가상 자료로 실행할 수 있습니다.
 
 현재는 강사 개인용입니다. 여러 사용자 계정 분리, 다른 PC에만 있는 미공유 교재 수집은 확장 범위입니다. MCP는 별도 stdio 클라이언트로 호출을 검증하며 Codex·Cowork 영구 설치를 뜻하지 않습니다. GPT Actions는 MCP와 중복 구현하지 않습니다.
+
+## 최종 시연에서 확인할 추가 보완
+
+‘대화 저장’ 버튼은 현재 자동 저장된 대화를 다시 저장하며 새 GPT 요청을 만들지 않습니다. 도구 이력이 유지되는지 서버·Firestore 재조회로 확인합니다. 연락처·이메일 형식을 질문에 넣으면 `[연락처 가림]`·`[이메일 가림]`으로 바꿔 AI 입력과 대화 저장에 사용하고, 응답의 `user_message`와 `privacy_notice`로 화면에도 알립니다. 한국어 조사와 붙은 이메일도 회귀 테스트에 포함합니다. 개인정보 전체를 탐지하거나 모든 공격을 막는다는 의미는 아닙니다.
+
+좁은 화면은 390px CSS 뷰포트의 실제 배포 페이지에서 메뉴 이동·16px 입력·44px 이상 주요 버튼·추가/수정/삭제를 검증합니다. 이는 브라우저 반응형 검증이며 휴대폰 하드웨어 터치 검증과 구분합니다. 통과 여부는 제출 ZIP의 최신 `18개항목-검증결과.md`와 `실행검증.md`에서 실행 시각·방법·화면을 대조합니다. 네이토 사전평가의 재평가 점수는 별도로 확인해야 합니다.
