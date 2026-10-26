@@ -104,6 +104,35 @@ def test_failed_ai_call_is_not_saved_as_success(setup, monkeypatch):
     assert not repo.list("conversations")
 
 
+def test_manual_resave_keeps_server_tool_history_and_creation_time(setup):
+    client, repo = setup
+    trace = [{"name": "get_data_summary", "arguments": {}, "basis": "서버 수치 확인"}]
+    messages = [{"role": "user", "content": "기록 확인"}, {"role": "assistant", "content": "2시간입니다"}]
+    repo.save("conversations", "prior", {"title": "기존", "messages": messages, "agent_id": "report",
+                "created_at": "2026-01-01T00:00:00Z", "tool_calls": trace})
+    result = client.post("/api/conversations", json={"id": "prior", "title": "다시 저장", "messages": messages})
+    assert result.status_code == 201
+    saved = client.get("/api/conversations/prior").json()
+    assert saved["tool_calls"] == trace and saved["agent_id"] == "report"
+    assert saved["created_at"] == "2026-01-01T00:00:00Z" and saved["save_mode"] == "manual"
+    assert saved["messages_edited_manually"] is False
+    result = client.post("/api/conversations", json={"id": "prior", "messages": [{"role": "user", "content": "내용 수정"}]})
+    assert result.json()["messages_edited_manually"] is True and result.json()["tool_calls"] == trace
+
+
+def test_chat_redacts_identifiers_before_generation_and_storage(setup, monkeypatch):
+    client, repo = setup
+    def safe_answer(summary, messages):
+        assert "010-1234-5678" not in str(messages) and "demo@example.com" not in str(messages)
+        return "요청을 확인했습니다."
+    monkeypatch.setattr(chat, "generate_answer", safe_answer)
+    result = client.post("/api/chat", json={"message": "010-1234-5678, demo@example.com 교육 통계"}).json()
+    assert result["saved"] and result["privacy_notice"]
+    record = repo.get("conversations", result["conversation_id"])
+    assert "010-1234-5678" not in str(record) and "demo@example.com" not in str(record)
+    assert record["save_mode"] == "auto" and "[연락처 가림]" in result["user_message"]
+
+
 
 
 def test_calendar_keeps_distinct_time_slots_and_uses_edited_hours(setup):

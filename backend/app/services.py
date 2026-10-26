@@ -7,6 +7,7 @@ from openai import OpenAI, OpenAIError
 
 from .config import get_settings
 from .agent_tools import AgentAnswer, SUMMARY_TOOL, run_summary_tool
+from .privacy import redact_value
 
 
 def now():
@@ -73,6 +74,9 @@ def generate_answer(summary, messages):
     settings = get_settings()
     if not settings.openai_key:
         raise ChatUnavailable("AI 서비스가 아직 연결되지 않았습니다. AI 연결 설정을 마친 뒤 다시 질문해 주세요.")
+    # Protect both initial context and later function outputs; leave the caller's data intact.
+    summary = redact_value(summary)
+    messages = redact_value(messages)
     role = ("당신은 보고서 에이전트 캔디봄입니다. 사실에 근거한 활동 보고서 초안을 작성하세요. 자료 기준일, 실적, 해석과 다음 제안을 구분하세요."
             if summary.get("agent_id") == "report" else "당신은 분석 에이전트 캔디빛입니다. 교육시간과 운영 추세를 숫자와 쉬운 설명으로 분석하세요.")
     instructions = role + "\n" + """당신은 캔디A플렉스 에듀 융합에이전트의 강사 전용 AI 비서입니다. 한국어로 간결하고 친절하게 답하세요.

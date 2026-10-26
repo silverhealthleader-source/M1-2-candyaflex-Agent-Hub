@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from ..database import get_repository
 from ..models import ConversationWrite
 from ..services import now
+from ..privacy import redact_text, redact_value
 
 router = APIRouter(prefix="/api/conversations", tags=["대화 기록"])
 
@@ -30,8 +31,11 @@ def save_conversation(body: ConversationWrite, repo=Depends(get_repository)):
     if body.id and not existing:
         raise HTTPException(404, "저장할 대화를 찾을 수 없습니다.")
     stamp = now()
-    row = {"title": body.title, "messages": [m.model_dump() for m in body.messages], "agent_id": existing.get("agent_id", "analysis") if existing else "analysis",
-           "created_at": existing.get("created_at", stamp) if existing else stamp, "updated_at": stamp, "deleted": False}
+    messages = redact_value([m.model_dump() for m in body.messages])
+    row = {"title": redact_text(body.title), "messages": messages, "agent_id": existing.get("agent_id", "analysis") if existing else "analysis",
+           "created_at": existing.get("created_at", stamp) if existing else stamp, "updated_at": stamp, "deleted": False,
+           "save_mode": "manual", "tool_calls": existing.get("tool_calls", []) if existing else [],
+           "messages_edited_manually": bool(existing and existing.get("messages") != messages)}
     return repo.save("conversations", body.id or uuid4().hex, row)
 
 
