@@ -21,3 +21,9 @@ docs/verification/
 *.pdf
 *.pptx
 *.csv
+
+# Presenter slides, speeches and notes are retained in private submission folders.
+/frontend/presentation.html
+/frontend/presentation.css
+/frontend/presentation.js
+/docs/presentation-guide.md
