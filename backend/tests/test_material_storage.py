@@ -1,9 +1,10 @@
 import hashlib
 from pathlib import Path
+from zipfile import ZipFile, ZIP_STORED
 
 import pytest
 
-from app.material_storage import CHUNK_BYTES, MaterialFileStore, MaterialFileUnavailable, pdf_metadata
+from app.material_storage import CHUNK_BYTES, MaterialFileStore, MaterialFileUnavailable, pdf_metadata, pptx_metadata
 from test_api import setup
 
 
@@ -138,3 +139,59 @@ def test_online_pdf_route_inline_download_range_and_unavailable(setup, monkeypat
     assert partial.status_code == 206 and partial.content == b'%PDF-'
     repo.save('materials', 'bad', {'source_type': 'firestore_file', 'storage_sha256': '../private'})
     assert client.get('/api/materials/bad/file').status_code == 503
+
+
+def make_pptx(path, *, macro=False, presentation=True):
+    content_type = 'application/vnd.openxmlformats-officedocument.presentationml.presentation.main+xml'
+    with ZipFile(path, 'w', ZIP_STORED) as archive:
+        archive.writestr('[Content_Types].xml', f'<Types><Override PartName="/ppt/presentation.xml" ContentType="{content_type}"/></Types>')
+        if presentation:
+            archive.writestr('ppt/presentation.xml', '<presentation/>')
+        archive.writestr('ppt/media/image.png', b'x' * (CHUNK_BYTES + 10))
+        if macro:
+            archive.writestr('ppt/vbaProject.bin', b'macro')
+
+
+def test_original_pptx_roundtrip_and_pdf_type_separation(tmp_path):
+    source = tmp_path / 'editable.pptx'
+    make_pptx(source)
+    store = MaterialFileStore(FileDatabase(), tmp_path / 'cache')
+    metadata = store.store_pptx(source, 'stamp')
+    assert metadata['chunk_count'] == 2
+    assert store.get_file(metadata['sha256'], kind='pptx').read_bytes() == source.read_bytes()
+    with pytest.raises(MaterialFileUnavailable):
+        store.get_file(metadata['sha256'])
+    with pytest.raises(MaterialFileUnavailable):
+        store.get_file(metadata['sha256'], kind='../pptx')
+
+
+@pytest.mark.parametrize('bad_kind', ['fake', 'macro', 'missing-presentation'])
+def test_pptx_validation_rejects_invalid_or_macro_files(tmp_path, bad_kind):
+    source = tmp_path / 'invalid.pptx'
+    if bad_kind == 'fake':
+        source.write_bytes(b'not a presentation')
+    else:
+        make_pptx(source, macro=bad_kind == 'macro', presentation=bad_kind != 'missing-presentation')
+    with pytest.raises(ValueError):
+        pptx_metadata(source)
+
+
+def test_pptx_original_download_preserves_mime_attachment_and_pdf(setup, monkeypatch, tmp_path):
+    from app.routers import materials
+    client, repo = setup
+    pptx = tmp_path / 'original.pptx'
+    make_pptx(pptx)
+    class Storage:
+        def get_file(self, digest, kind='pdf'):
+            assert digest == 'pptx-digest' and kind == 'pptx'
+            return pptx
+    monkeypatch.setattr(materials, 'get_material_file_store', lambda: Storage())
+    repo.save('materials', 'lesson', {'kind': 'pdf', 'original_storage_sha256': 'pptx-digest', 'original_file_name': 'lesson.pptx'})
+    result = client.get('/api/materials/lesson/original')
+    assert result.content == pptx.read_bytes()
+    assert result.headers['content-type'] == 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+    assert result.headers['content-disposition'].startswith('attachment;')
+    assert result.headers['cache-control'] == 'private, no-store'
+    partial = client.get('/api/materials/lesson/original', headers={'Range': 'bytes=0-3'})
+    assert partial.status_code == 206 and partial.content == b'PK\x03\x04'
+    assert client.get('/api/materials/unknown/original').status_code == 404

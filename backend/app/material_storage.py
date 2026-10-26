@@ -1,10 +1,12 @@
-"""Private PDF storage for a bounded personal library; never public static assets."""
+"""Private PDF and PowerPoint storage; never public static assets."""
 import hashlib
 import math
 from functools import lru_cache
 from pathlib import Path
 from threading import RLock
 from uuid import uuid4
+from zipfile import BadZipFile, ZipFile
+from xml.etree import ElementTree
 
 from .database import get_db
 
@@ -33,6 +35,31 @@ def pdf_metadata(path):
             'chunk_count': math.ceil(size / CHUNK_BYTES), 'chunk_bytes': CHUNK_BYTES}
 
 
+def pptx_metadata(path):
+    path = Path(path)
+    size = path.stat().st_size
+    if path.suffix.lower() != '.pptx' or not 5 <= size <= MAX_PDF_BYTES:
+        raise ValueError('PowerPoint 원본은 32 MiB 이하의 PPTX 파일로 선택해 주세요.')
+    try:
+        with ZipFile(path) as archive:
+            entries = archive.infolist()
+            names = {entry.filename for entry in entries}
+            if (len(entries) > 10000 or sum(entry.file_size for entry in entries) > MAX_LIBRARY_BYTES
+                    or not {'[Content_Types].xml', 'ppt/presentation.xml'}.issubset(names)
+                    or any(name.lower().endswith('vbaproject.bin') for name in names)):
+                raise ValueError('일반 PPTX 형식의 교재 파일을 확인해 주세요.')
+            types = ElementTree.fromstring(archive.read('[Content_Types].xml'))
+            expected = 'application/vnd.openxmlformats-officedocument.presentationml.presentation.main+xml'
+            if not any(node.attrib.get('PartName') == '/ppt/presentation.xml'
+                       and node.attrib.get('ContentType') == expected for node in types):
+                raise ValueError('PowerPoint 프레젠테이션 형식을 확인해 주세요.')
+    except (BadZipFile, KeyError, ElementTree.ParseError) as exc:
+        raise ValueError('PPTX 파일 형식을 확인해 주세요.') from exc
+    digest = hashlib.sha256(path.read_bytes()).hexdigest()
+    return {'sha256': digest, 'size_bytes': size, 'chunk_count': math.ceil(size / CHUNK_BYTES),
+            'chunk_bytes': CHUNK_BYTES, 'file_kind': 'pptx'}
+
+
 class MaterialFileStore:
     def __init__(self, db, cache_dir):
         self.db = db
@@ -41,6 +68,12 @@ class MaterialFileStore:
 
     def store_pdf(self, path, stamp):
         metadata = pdf_metadata(path)
+        return self._store(path, stamp, metadata)
+
+    def store_pptx(self, path, stamp):
+        return self._store(path, stamp, pptx_metadata(path))
+
+    def _store(self, path, stamp, metadata):
         ref = self.db.collection('material_files').document(metadata['sha256'])
         old = ref.get(timeout=15, retry=None)
         if old.exists and old.to_dict().get('ready'):
@@ -49,7 +82,7 @@ class MaterialFileStore:
                    for row in self.db.collection('material_files').stream(timeout=20, retry=None)
                    if (row.to_dict() or {}).get('ready'))
         if used + metadata['size_bytes'] > MAX_LIBRARY_BYTES:
-            raise ValueError('개인 PDF 보관 한도 128 MiB를 초과합니다. 별도 파일 저장소를 연결해 주세요.')
+            raise ValueError('개인 교재 보관 한도 128 MiB를 초과합니다. 별도 파일 저장소를 연결해 주세요.')
         with Path(path).open('rb') as source:
             index = 0
             uploaded_hash = hashlib.sha256()
@@ -68,11 +101,13 @@ class MaterialFileStore:
         ref.set({**metadata, 'ready': True, 'created_at': stamp}, timeout=20, retry=None)
         return metadata
 
-    def get_file(self, digest):
+    def get_file(self, digest, kind='pdf'):
+        if kind not in {'pdf', 'pptx'}:
+            raise MaterialFileUnavailable('지원하지 않는 교재 파일 형식입니다.')
         if not isinstance(digest, str) or len(digest) != 64 or any(c not in '0123456789abcdef' for c in digest):
             raise MaterialFileUnavailable('교재 파일 식별자를 확인해 주세요.')
         with self._lock:
-            target = self.cache_dir / (digest + '.pdf')
+            target = self.cache_dir / (digest + '.' + kind)
             if target.is_file():
                 return target
             ref = self.db.collection('material_files').document(digest)
@@ -80,7 +115,7 @@ class MaterialFileStore:
             metadata = snapshot.to_dict() if snapshot.exists else {}
             size = metadata.get('size_bytes', 0)
             count = metadata.get('chunk_count', 0)
-            if (not metadata.get('ready') or not 5 <= size <= MAX_PDF_BYTES
+            if (not metadata.get('ready') or metadata.get('file_kind', 'pdf') != kind or not 5 <= size <= MAX_PDF_BYTES
                     or metadata.get('chunk_bytes') != CHUNK_BYTES or count != math.ceil(size / CHUNK_BYTES)):
                 raise MaterialFileUnavailable('보관된 교재 파일을 확인할 수 없습니다.')
             self.cache_dir.mkdir(parents=True, exist_ok=True)

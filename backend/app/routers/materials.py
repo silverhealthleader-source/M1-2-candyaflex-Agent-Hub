@@ -89,3 +89,19 @@ def material_file(key: str, download: bool = False, repo=Depends(get_repository)
     media = "application/pdf" if target.suffix.lower() == ".pdf" else "application/vnd.openxmlformats-officedocument.presentationml.presentation"
     return FileResponse(target, media_type=media, filename=record.get("file_name", target.name),
                         content_disposition_type="attachment" if download else "inline")
+
+
+@router.get("/{key}/original")
+def material_original(key: str, repo=Depends(get_repository)):
+    record = repo.get('materials', key)
+    if not record or not record.get('original_storage_sha256'):
+        raise HTTPException(404, '연결된 PowerPoint 원본을 찾을 수 없습니다.')
+    try:
+        target = get_material_file_store().get_file(record['original_storage_sha256'], kind='pptx')
+    except MaterialFileUnavailable as exc:
+        raise HTTPException(503, str(exc)) from exc
+    return FileResponse(target,
+                        media_type='application/vnd.openxmlformats-officedocument.presentationml.presentation',
+                        filename=record.get('original_file_name', '교재.pptx'),
+                        content_disposition_type='attachment',
+                        headers={'Cache-Control': 'private, no-store', 'X-Content-Type-Options': 'nosniff'})
