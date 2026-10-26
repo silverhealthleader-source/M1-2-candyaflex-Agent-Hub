@@ -46,18 +46,38 @@
     $$('[data-chat-agent]').forEach(button=>{const selected=button.dataset.chatAgent===id;button.classList.toggle('selected',selected);button.setAttribute('aria-pressed',String(selected));});
   }
   async function loadCalendar(){
-    const sequence=++calendarSequence;const response=await api('/api/data/calendar?year='+$('#calendar-year').value);if(sequence!==calendarSequence)return;
-    calendarData=response;$('#calendar-year-total').textContent=`실적 ${number(response.hours)}시간 · ${number(response.record_count)}개 기록`;
+    const sequence=++calendarSequence;$('#calendar-year-total').textContent='일정 불러오는 중…';$('#month-grid').setAttribute('aria-busy','true');
+    let response;
+    try{response=await api('/api/data/calendar?year='+$('#calendar-year').value);}
+    catch(error){
+      if(sequence!==calendarSequence)return;
+      calendarData=null;const needsKey=error.status===401;
+      $('#calendar-year-total').textContent=needsKey?'접속 키 연결 필요':'일정 불러오기 실패';$('#plan-detail').hidden=true;
+      const panel=element('section','panel calendar-load-error');
+      const message=element('p','',needsKey?'교육계획은 비공개 저장소에 보관되어 있습니다. 접속 키를 연결하면 월별 날짜·시간·장소를 불러옵니다.':error.message);message.setAttribute('role','alert');
+      const connect=element('button','button primary',needsKey?'접속 키 연결':'연결 설정 확인');connect.type='button';connect.onclick=()=>openConnectionSettings();
+      panel.append(element('h2','',needsKey?'연결 후 월별 일정을 볼 수 있어요':'일정을 불러오지 못했습니다'),message,connect);$('#month-grid').replaceChildren(panel);
+      $('#selected-month-title').textContent='일정 연결 대기';$('#selected-month-total').textContent='';$('#day-blocks').replaceChildren(empty('아직 일정을 불러오지 못했습니다','연결 전 화면은 일정이 없다는 뜻이 아닙니다.'));
+      throw error;
+    }finally{if(sequence===calendarSequence)$('#month-grid').setAttribute('aria-busy','false');}
+    if(sequence!==calendarSequence)return;
+    calendarData=response;const planCount=response.months.reduce((sum,month)=>sum+month.planning.count,0);
+    $('#calendar-year-total').textContent=`교육계획 ${planCount}건 · 실적 ${number(response.hours)}시간`;
     const picker=$('#calendar-year');const selected=picker.value;picker.replaceChildren();for(const year of response.available_years){const option=element('option','',`${year}년`);option.value=year;picker.append(option);}if(!response.available_years.includes(response.year)){const option=element('option','',`${response.year}년`);option.value=response.year;picker.append(option);}picker.value=selected;
-    const same=selectedMonth?.startsWith(String(response.year))&&response.months.some(m=>m.month===selectedMonth);if(!same)selectedMonth=[...response.months].reverse().find(m=>m.has_records||m.planning?.count)?.month || response.months[0].month;
+    const same=selectedMonth?.startsWith(String(response.year))&&response.months.some(m=>m.month===selectedMonth);
+    const currentMonth=new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Seoul'}).slice(0,7);
+    if(!same)selectedMonth=response.months.find(m=>m.month===currentMonth&&(m.has_records||m.planning?.count))?.month||[...response.months].reverse().find(m=>m.has_records||m.planning?.count)?.month||response.months[0].month;
     renderMonthGrid();renderMonthDetail();
   }
   function renderMonthGrid(){
     const grid=$('#month-grid');grid.replaceChildren();
     for(const month of calendarData.months){const button=element('button','month-block');button.type='button';button.dataset.month=month.month;button.classList.toggle('selected',month.month===selectedMonth);button.setAttribute('aria-pressed',String(month.month===selectedMonth));button.setAttribute('aria-label',`${Number(month.month.slice(5))}월 ${month.has_records?number(month.hours)+'시간, '+month.day_count+'일':'보유 기록 없음'}`);
       const top=element('div','month-block-top');top.append(element('strong','',`${Number(month.month.slice(5))}월`),element('span','',month.has_records?'↗':'·'));
-      const value=element('div','month-block-value',month.has_records?number(month.hours):'—');value.append(element('span','',month.has_records?'시간':''));
-      button.append(top,value,element('p','',month.has_records?`실적 ${month.day_count}일 · ${month.record_count}건`:month.planning?.count?'교육결과 기록 미등록':'보유 기록 없음'));
+      const hasPlans=month.planning?.count>0;
+      const value=element('div','month-block-value',hasPlans?number(month.planning.scheduled_hours):month.has_records?number(month.hours):'—');value.append(element('span','',hasPlans?'예정시간':month.has_records?'시간':''));
+      const plannedDays=new Set((month.plans||[]).filter(plan=>plan.status==='scheduled').map(plan=>plan.date)).size;
+      button.append(top,value,element('p','',hasPlans?`진행 예정 ${month.planning.by_status.scheduled}회 · ${plannedDays}일`:month.has_records?`실적 ${month.day_count}일 · ${month.record_count}건`:'보유 기록 없음'));
+      if(hasPlans&&month.has_records)button.append(element('p','month-actual-count',`실적 ${number(month.hours)}시간 · ${month.record_count}건`));
       if(month.planning?.count){const plans=element('span','month-plan-count',`계획 ${month.planning.count}건${month.planning.by_status.held?' · 보류 '+month.planning.by_status.held+'건':''}${month.planning.by_status.cancelled?' · 폐강 '+month.planning.by_status.cancelled+'건':''}${month.planning.confirmed_zoom_count?' · Zoom 전환 '+month.planning.confirmed_zoom_count+'건':''}${month.planning.confirmed_online_count?' · 온라인 '+month.planning.confirmed_online_count+'회 '+number(month.planning.confirmed_online_hours)+'시간':''}`);button.append(plans);button.setAttribute('aria-label',button.getAttribute('aria-label')+`, 계획 ${month.planning.count}건, 보류 ${month.planning.by_status.held}건, 대면 폐강 ${month.planning.by_status.cancelled}건, Zoom 대체 확정 ${month.planning.confirmed_zoom_count||0}건, 온라인 확정 일정 ${month.planning.confirmed_online_count||0}회 ${number(month.planning.confirmed_online_hours||0)}시간`);}
       button.onclick=()=>{selectedMonth=month.month;renderMonthGrid();renderMonthDetail();(month.planning?.count?$('#plan-detail'):$('#month-detail')).scrollIntoView({behavior:'smooth',block:'start'});};grid.append(button);}
   }
@@ -100,8 +120,8 @@
       const day=new Date(plan.date+'T12:00:00').toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'});
       time.append(element('strong','',day),element('span','',`${plan.start_time}–${plan.end_time}`),element('small','',`${online?'예정':'원본 계획'} ${number(plan.planned_hours)}시간`));
       const content=element('div','plan-content'),top=element('div','plan-card-top');
-      top.append(element('span','plan-status',online?'온라인 일정 확정':labels[plan.status]||plan.status),element('span','plan-institution',`${plan.region} · ${plan.institution.replace(/\n/g,' ')}`));
-      content.append(top,element('h3','',plan.title),element('p','plan-audience',`${online?'교육 대상':'원본 계획 대상'}: ${plan.audience_raw} · ${plan.delivery_mode}`));
+      top.append(element('span','plan-status',online?'온라인 일정 확정':labels[plan.status]||plan.status),element('span','plan-institution',plan.region));
+      content.append(top,element('h3','',plan.title),element('p','plan-location',`장소: ${plan.institution.replace(/\n/g,' ')||'확인 중'}`),element('p','plan-audience',`${online?'교육 대상':'원본 계획 대상'}: ${plan.audience_raw} · ${plan.delivery_mode}`));
       if(plan.status!=='scheduled'||online)content.append(element('p','plan-status-note',plan.status_note||''));
       for(const confirmed of [true,false]){
         const overlaps=(plan.schedule_conflicts||[]).filter(other=>Boolean(other.distinct_session_confirmed)===confirmed);

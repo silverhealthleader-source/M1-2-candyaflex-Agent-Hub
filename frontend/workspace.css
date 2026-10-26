@@ -43,6 +43,8 @@
 }
 
 .slide-note{margin:0 0 16px;line-height:1.7;overflow-wrap:anywhere;font-size:13px}
+.calendar-load-error{grid-column:1/-1;padding:24px}.calendar-load-error h2{font-size:21px}.calendar-load-error p{font-size:15px;line-height:1.8}.calendar-load-error .button{margin-top:10px}
+.plan-content .plan-location{font-size:15px;font-weight:650;color:var(--ink);line-height:1.7;margin:8px 0}.month-block .month-actual-count{font-size:12px;line-height:1.6}
 .form-error{margin:16px 0;padding:14px 16px;background:#fff2ed;border:1px solid #dfb6a9;border-radius:10px;color:#85352b;font-size:15px;line-height:1.8}
 .form-error p{margin:0 0 10px}.form-error .button{margin-top:4px}
 .pdf-reader{width:100%;min-width:0;background:#e7ebee;padding:12px;border-radius:10px}
