@@ -13,6 +13,10 @@
 
 사전평가 보완 설명은 [18개 평가 항목과 검증 방법](docs/evaluation-evidence.md)에 정리했습니다. **코드 구현, 자동 테스트, 실제 배포 실행 기록은 서로 다른 근거**입니다. 비공개 제출 ZIP의 `실행검증.md`에는 실제 HTTP 요청·응답, Firestore 직접 재조회, 대화 전체 메시지 복원 결과를 Markdown으로 수록하고 `screenshots/`의 실제 화면을 연결합니다. 이미지가 분석되지 않는 평가에서도 실행 결과의 본문을 읽을 수 있게 구성했습니다. 이 설명은 점수나 통과를 보장하는 선언이 아닙니다.
 
+## 사이트 입장 인증
+
+Vercel의 서버 전용 비공개 환경변수 `SITE_ACCESS_CODE`로 사이트 입장 번호를 직접 설정합니다. 실제 값은 코드·GitHub·브라우저 설정 파일에 포함하지 않습니다. 번호가 없으면 사이트를 열지 않으며 교육운영 API의 기존 개인 접속 키 보호도 유지합니다. [설정·변경·접속 종료 안내](docs/site-access.md)를 참고하세요. Render 운영 배포는 API·Swagger를 제공하고 프론트 화면은 인증된 Vercel에서만 제공합니다.
+
 ## 필수 네 가지 기능
 
 | 기능 | 구현과 화면 |
@@ -168,7 +172,7 @@ node --check frontend/workspace.js
 node frontend/build.mjs
 ```
 
-자동 테스트 **62개**는 CRUD·대화·요약·Function Calling·일정 분리·PDF 저장과 손상 검증을 확인합니다. `tests/conftest.py`가 해당 pytest 프로세스의 개인 키·DB 연결 설정을 비워 테스트 전용 저장소와 모의 AI를 사용합니다. `.env` 파일 자체는 수정하지 않습니다.
+자동 테스트 **66개**는 CRUD·대화·요약·Function Calling·일정 분리·PDF 저장과 손상 검증을 확인합니다. `tests/conftest.py`가 해당 pytest 프로세스의 개인 키·DB 연결 설정을 비워 테스트 전용 저장소와 모의 AI를 사용합니다. `.env` 파일 자체는 수정하지 않습니다.
 
 운영 배포의 읽기 전용 점검은 아래 명령으로 재현합니다. `APP_ACCESS_TOKEN`은 비공개 `.env` 또는 환경변수에만 저장합니다.
 

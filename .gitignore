@@ -10,6 +10,7 @@ __pycache__/
 service-account*.json
 *firebase-adminsdk*.json
 frontend/dist/
+frontend/node_modules/
 .vercel/
 
 # Private teaching records and proof images are never published.

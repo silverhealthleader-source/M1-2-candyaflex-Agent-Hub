@@ -40,6 +40,6 @@ def get_settings():
         max_output_tokens=max(100, min(4000, int(os.getenv("OPENAI_MAX_OUTPUT_TOKENS", "1000")))),
         origins=tuple(x.strip() for x in os.getenv("ALLOWED_ORIGINS", "http://127.0.0.1:8010,http://localhost:8010,http://127.0.0.1:4173").split(",") if x.strip()),
         access_token=os.getenv("APP_ACCESS_TOKEN", ""),
-        environment=os.getenv("APP_ENV", "development"),
+        environment=os.getenv("APP_ENV", "production" if os.getenv("RENDER") == "true" else "development"),
         cache_seconds=max(0, min(3600, int(os.getenv("FIRESTORE_CACHE_SECONDS", "900")))),
     )

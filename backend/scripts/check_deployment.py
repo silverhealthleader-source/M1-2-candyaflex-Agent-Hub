@@ -67,15 +67,32 @@ def main():
             restored = True
         checks.append('Input validation and conversation list / detail contract')
         frontend = client.get(origin + '/education')
-        assert frontend.status_code == 200
-        assert all(name in frontend.text for name in ['chat-input', 'send-button', 'data-body', 'history-list', 'context-period'])
-        assert base in client.get(origin + '/config.js').text
-        checks.append('Vanilla frontend and configured backend address')
+        gated = frontend.status_code in [302, 303] and frontend.headers.get('location', '').startswith('/_access?')
+        content_verified = False
+        if gated:
+            login = client.get(origin + '/_access')
+            assert login.status_code == 200, 'Vercel SITE_ACCESS_CODE 설정과 재배포를 확인해 주세요.'
+            assert 'name="code"' in login.text and 'type="password"' in login.text
+            assert client.get(origin + '/app.js').status_code == 401
+            assert client.get(origin + '/config.js').status_code == 401
+            checks.append('Configured server-side site gate; anonymous HTML and source assets blocked')
+            site_code = os.getenv('SITE_ACCESS_CODE', '').strip()
+            if site_code:
+                signed_in = client.post(origin + '/_access/login', data={'code': site_code, 'returnTo': '/education'}, headers={'Origin': origin})
+                assert signed_in.status_code == 303, '사이트 인증번호를 비공개 환경변수에서 확인해 주세요.'
+                frontend = client.get(origin + '/education')
+        if not gated or os.getenv('SITE_ACCESS_CODE', '').strip():
+            assert frontend.status_code == 200
+            assert all(name in frontend.text for name in ['chat-input', 'send-button', 'data-body', 'history-list', 'context-period'])
+            assert base in client.get(origin + '/config.js').text
+            content_verified = True
+            checks.append('Vanilla frontend and configured backend address')
     report = {'checked_at_utc': datetime.now(timezone.utc).isoformat(), 'passed': True,
         'api_url': base, 'frontend_origin': origin, 'checks': checks, 'required_api_methods': required,
         'conversation_detail_restored': restored, 'saved_data_count': summary['count'],
+        'site_access_gate_detected': gated, 'frontend_content_verified': content_verified,
         'production_mutations': 0, 'gpt_requests': 0,
-        'scope': 'Read-only checks. Use actual UI evidence for CRUD, real GPT and conversation restore.'}
+        'scope': 'No production data mutations or GPT calls. Optional SITE_ACCESS_CODE signs in without recording its value. When absent, a configured gate is checked; authenticated content still needs UI verification.'}
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding='utf-8')
     print(f'PASS: {len(checks)} read-only deployment checks. Private report saved.')

@@ -1,4 +1,5 @@
 import secrets
+import os
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, HTTPException
@@ -14,7 +15,7 @@ from .routers import chat, conversations, data, materials, plans
 from .services import ChatUnavailable
 
 settings = get_settings()
-app = FastAPI(title="캔디A플렉스 에듀 융합에이전트 API", version="0.2.1", description="교육운영 기록 분석과 데이터 기반 강사 AI 비서")
+app = FastAPI(title="캔디A플렉스 에듀 융합에이전트 API", version="0.2.2", description="교육운영 기록 분석과 데이터 기반 강사 AI 비서")
 app.add_middleware(CORSMiddleware, allow_origins=list(settings.origins), allow_credentials=False,
                    allow_methods=["GET", "POST", "PUT", "DELETE"], allow_headers=["Authorization", "Content-Type"])
 bearer = HTTPBearer(auto_error=False)
@@ -37,7 +38,7 @@ def health():
     current = get_settings()
     return {"status": "ok", "database_configured": current.database_configured,
             "database_mode": "emulator" if current.emulator_host else "cloud", "ai_configured": bool(current.openai_key),
-            "access_key_required": bool(current.access_token), "version": "0.2.1"}
+            "access_key_required": bool(current.access_token), "version": "0.2.2"}
 
 
 @app.exception_handler(DatabaseNotConfigured)
@@ -62,6 +63,13 @@ def database_quota_error(request, exc):
                                  "code": "FIRESTORE_QUOTA_EXCEEDED"})
 
 
-frontend = Path(__file__).resolve().parents[2] / "frontend"
-if (frontend / "index.html").exists():
-    app.mount("/", StaticFiles(directory=frontend, html=True), name="frontend")
+def mount_local_frontend(application):
+    """Production pages are served only by the authenticated Vercel site."""
+    if get_settings().environment == "production" or os.getenv("RENDER") == "true":
+        return
+    frontend = Path(__file__).resolve().parents[2] / "frontend"
+    if (frontend / "index.html").exists():
+        application.mount("/", StaticFiles(directory=frontend, html=True), name="frontend")
+
+
+mount_local_frontend(app)
