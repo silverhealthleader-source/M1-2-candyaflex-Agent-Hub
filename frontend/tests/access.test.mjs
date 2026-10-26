@@ -1,6 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createSiteGate, safeReturnPath} from '../access/gate.mjs';
+import {readFileSync} from 'node:fs';
+import deployedGate from '../access/proxy.js';
+
+test('Vercel accepts the entrypoint extension and the real server module blocks anonymous access',async()=>{
+  const deployment=JSON.parse(readFileSync(new URL('../vercel.json',import.meta.url),'utf8'));
+  assert.match(deployment.proxy.entrypoint,/\.(js|ts|py)$/);
+  assert.equal(typeof deployedGate,'function');
+  assert.equal((await deployedGate(new Request('https://site.example/app.js'))).status,401);
+});
 
 // Synthetic test secret only; production code comes solely from Vercel settings.
 const synthetic = 'unit-test-only-passphrase';
