@@ -122,6 +122,7 @@
   }
   async function loadSubjects(){
     const response=await api('/api/materials/subjects');subjectGroups=response.items;
+    for(const group of subjectGroups)if(group.subject==='미드저니 입문→숙련')group.materials.sort((a,b)=>a.title.localeCompare(b.title,'ko',{numeric:true}));
     const options=$('#subject-options');options.replaceChildren();for(const group of subjectGroups){const option=element('option');option.value=group.subject;options.append(option);}
     const linked=new URLSearchParams(location.search);
     if(!materialLinkHandled&&linked.get('subject'))$('#subject-search').value=linked.get('subject').slice(0,200);
