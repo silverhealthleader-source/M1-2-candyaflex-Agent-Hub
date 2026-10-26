@@ -12,6 +12,11 @@ def test_known_identifier_patterns_are_masked(sample):
     assert sample not in redact_text("연습용: "+sample)
 
 
+@pytest.mark.parametrize("suffix", ["은", "입니다", "으로 문의"])
+def test_korean_particles_do_not_prevent_email_redaction(suffix):
+    assert redact_text("예시 이메일 demo@example.com"+suffix) == "예시 이메일 [이메일 가림]"+suffix
+
+
 def test_recursive_masking_preserves_statistics_and_originals():
     original = {"period": "2026-10-26", "hours": 12.5, "count": 100, "notes": ["010-1234-5678"], "flag": False}
     before = deepcopy(original)

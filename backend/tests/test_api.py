@@ -126,7 +126,7 @@ def test_chat_redacts_identifiers_before_generation_and_storage(setup, monkeypat
         assert "010-1234-5678" not in str(messages) and "demo@example.com" not in str(messages)
         return "요청을 확인했습니다."
     monkeypatch.setattr(chat, "generate_answer", safe_answer)
-    result = client.post("/api/chat", json={"message": "010-1234-5678, demo@example.com 교육 통계"}).json()
+    result = client.post("/api/chat", json={"message": "010-1234-5678, demo@example.com은 교육 통계"}).json()
     assert result["saved"] and result["privacy_notice"]
     record = repo.get("conversations", result["conversation_id"])
     assert "010-1234-5678" not in str(record) and "demo@example.com" not in str(record)
