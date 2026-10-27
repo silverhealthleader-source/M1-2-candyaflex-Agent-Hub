@@ -183,7 +183,7 @@
       const part=linked.get('part');
       if(linked.get('subject')==='미드저니 입문→숙련'&&/^[1-4]$/.test(part||'')){
         const material=subjectGroups.find(group=>group.subject===linked.get('subject'))?.materials.find(item=>item.title.startsWith(`미드저니 교재 PART ${part} ·`));
-        if(material)await openSlides(material,{original:!!material.original_storage_sha256});else toast('선택한 교재를 찾지 못했습니다. 자료실에서 교재 목록을 확인해 주세요.');
+        if(material)await openSlides(material);else toast('선택한 교재를 찾지 못했습니다. 자료실에서 교재 목록을 확인해 주세요.');
       }
     }
   }
