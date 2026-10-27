@@ -205,6 +205,7 @@ h1,h2,h3{font-family:var(--font-display);font-weight:700;line-height:1.3;margin:
 .topbar>span:last-child{min-width:0;font-size:clamp(.78rem,3.2vw,1rem);line-height:1.45;word-break:keep-all;overflow-wrap:anywhere}
 </style>
 <link rel="stylesheet" href="academy-design.css">
+<link rel="stylesheet" href="local-video.css">
 
 <div class="shell">
   <aside class="side" id="side">
@@ -265,8 +266,9 @@ const CATS = [
       items:["첫 AI 노래 만들기, 노래 재료 4칸","노래 느낌 114가지·스타일 조합기","앨범 썸네일·Flow 뮤직비디오","안전 수칙 4가지"], res:[["교본 열기",A("f4b4cc1d-f7eb-4b36-966e-1e379a8f06d9"),"gold"]] },
     { t:"밀양 아리랑의 현대적 해석", st:"plan", role:"2026 경남 AI크리에이터 100up 팀 프로젝트 — 3분 이내 영상 제작 기획·답사·제작", aud:["AI크리에이터 팀"], type:"프로젝트 기획서",
       items:["제출 기획서 v3","밀양아트센터 사전 답사·자료 수집","영상 제작 진행 중"], res:[["기획서 v3",A("2fc7a7ab-a442-41dc-b77c-0e5d365cc275"),"gold"],["완성 영상","","soon"]] },
-    { t:"카페 아띠랑 AI 광고", st:"link", role:"Google Flow·Veo로 만든 10초 16:9 멀티모달 광고 — 제품·공간 중심, 느린 카메라, 무문자 원칙", aud:["40~80대 지역 고객","소상공인 광고 수업 사례"], type:"포트폴리오 (제출 완료)",
-      items:["제한된 객체 수, 무워터마크","제품과 공간 경험 강조","소상공인 숏폼 교육 사례로 활용"], res:[["영상 링크 연결 예정","","soon"]] },
+    { t:"카페 아띠랑 AI 광고", st:"live", role:"브랜드 필름과 10초 AI 광고, 로고송을 이 PC에 보관한 MP4 파일로 선택해 감상하세요.", aud:["40~80대 지역 고객","소상공인 광고 수업 사례"], type:"PC 영상 재생 · 광고 2편 · 로고송",
+      items:["브랜드 필름 · 10초","카페 아띠랑 AI 광고 · 10초","아띠랑 로고송 · 약 25초"],
+      res:[["브랜드 필름 재생 ▶","","gold","attirang-brand-film"],["10초 광고 재생 ▶","","gold","attirang-10s-ad"],["로고송 재생 ▶","","gold","attirang-logo-song"]], note:"처음에는 PC의 MP4 파일을 선택하세요. 영상은 PC에서만 재생되며 서버로 전송되지 않습니다." },
     { t:"AI 아트 작품전", st:"link", role:"생성형 AI 아트 창작, 단체 작품전 참가(롯데 송파 AI 아트전)와 수상 이력을 소개", aud:["AI 아트 수강생","전시 기획"], type:"포트폴리오",
       items:["AI 아티스트 수상 경력","색연필·동화책 삽화·아이소메트릭 인포그래픽 스타일","Midjourney·Flow·Kling·ImageFX 등 도구"], res:[["작품 갤러리 연결 예정","","soon"]] }
    ]},
@@ -411,7 +413,7 @@ const ST = {live:"운영 중", link:"연결 예정", plan:"기획·진행"};
 const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const all = CATS.flatMap(c=>c.agents);
 const cnt = (s,arr=all) => arr.filter(a=>a.st===s).length;
-const btn = ([l,u,k]) => u ? `<a class="btn ${k==="gold"?"btn-primary":"btn-gold"}" href="${esc(u)}"${/^https?:\/\//i.test(u)?' target="_blank" rel="noopener noreferrer"':''}>${esc(l)}</a>` : `<span class="btn soon" aria-disabled="true">${esc(l)}</span>`;
+const btn = ([l,u,k,localVideo]) => localVideo ? `<button type="button" class="btn ${k==="gold"?"btn-primary":"btn-gold"}" data-local-video="${esc(localVideo)}">${esc(l)}</button>` : u ? `<a class="btn ${k==="gold"?"btn-primary":"btn-gold"}" href="${esc(u)}"${/^https?:\/\//i.test(u)?' target="_blank" rel="noopener noreferrer"':''}>${esc(l)}</a>` : `<span class="btn soon" aria-disabled="true">${esc(l)}</span>`;
 const bookList = books => `<ul class="book-list" aria-label="출간 도서별 구매·소개 링크">${books.map(b=>`<li class="book-entry"><a class="book-title" href="${esc(b.url)}" target="_blank" rel="noopener noreferrer" aria-label="${esc(b.title)} 구매·소개 (새 탭)"><span>《${esc(b.title)}》</span><span class="arrow" aria-hidden="true">↗</span></a><small>${esc(b.detail)}</small>${(b.extra||[]).map(([label,url])=>`<a class="book-extra" href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(label)} ↗</a>`).join("<br>")}</li>`).join("")}</ul>`;
 const agentCard = (k,c) => `
   <article class="agent" style="--c:${c.color}">
@@ -544,4 +546,5 @@ document.addEventListener("click",async e=>{
 go(location.hash ? location.hash.slice(1) : "home", false);
 </script>
 
+<script type="module" src="local-video.js"></script>
 </body></html>
