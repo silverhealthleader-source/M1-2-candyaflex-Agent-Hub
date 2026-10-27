@@ -407,7 +407,7 @@ const ST = {live:"운영 중", link:"연결 예정", plan:"기획·진행"};
 const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const all = CATS.flatMap(c=>c.agents);
 const cnt = (s,arr=all) => arr.filter(a=>a.st===s).length;
-const btn = ([l,u,k]) => u ? `<a class="btn ${k==="gold"?"btn-primary":"btn-gold"}" href="${u}" target="_blank" rel="noopener">${esc(l)}</a>` : `<span class="btn soon" aria-disabled="true">${esc(l)}</span>`;
+const btn = ([l,u,k]) => u ? `<a class="btn ${k==="gold"?"btn-primary":"btn-gold"}" href="${esc(u)}"${/^https?:\/\//i.test(u)?' target="_blank" rel="noopener noreferrer"':''}>${esc(l)}</a>` : `<span class="btn soon" aria-disabled="true">${esc(l)}</span>`;
 const bookList = books => `<ul class="book-list" aria-label="출간 도서별 구매·소개 링크">${books.map(b=>`<li class="book-entry"><a class="book-title" href="${esc(b.url)}" target="_blank" rel="noopener noreferrer" aria-label="${esc(b.title)} 구매·소개 (새 탭)"><span>《${esc(b.title)}》</span><span class="arrow" aria-hidden="true">↗</span></a><small>${esc(b.detail)}</small>${(b.extra||[]).map(([label,url])=>`<a class="book-extra" href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(label)} ↗</a>`).join("<br>")}</li>`).join("")}</ul>`;
 const agentCard = (k,c) => `
   <article class="agent" style="--c:${c.color}">
