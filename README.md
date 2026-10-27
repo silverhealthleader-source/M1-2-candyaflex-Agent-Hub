@@ -2,6 +2,8 @@
 
 날짜별 교육시간과 수업 메모를 관리하고, 저장된 통계를 근거로 AI와 대화하는 강사 개인용 서비스입니다. 월별 시간표·과목별 교재·역할별 캐릭터를 함께 제공합니다. 동료평가 대상인 네 가지 핵심 기능은 **강사 워크스페이스**에 있습니다.
 
+**최종 제출 자료:** [공개용 ZIP 다운로드](submission/M1-2-candyaflex-final-public-2026-10-27.zip) · [제출 내용](docs/final-submission.md) · [ZIP 구성·검증 안내](submission/README.md)
+
 | 접속 | URL |
 |---|---|
 | 평가용 강사 워크스페이스 | https://candyaflex-edu-agent-hub.vercel.app/education |
