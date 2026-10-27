@@ -48,6 +48,7 @@
 .form-error{margin:16px 0;padding:14px 16px;background:#fff2ed;border:1px solid #dfb6a9;border-radius:10px;color:#85352b;font-size:15px;line-height:1.8}
 .form-error p{margin:0 0 10px}.form-error .button{margin-top:4px}
 .material-format-actions{display:flex;flex-direction:column;gap:10px;flex-shrink:0}
+.material-video-player{display:block;width:100%;max-height:65vh;background:#000;border-radius:8px}
 .pdf-reader{width:100%;min-width:0;background:#e7ebee;padding:12px;border-radius:10px}
 .pdf-reader-toolbar{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:16px;margin-bottom:10px}
 .pdf-reader-toolbar label{display:inline-flex;align-items:center;gap:8px;margin:0;font-size:16px;color:#173d52;white-space:nowrap}

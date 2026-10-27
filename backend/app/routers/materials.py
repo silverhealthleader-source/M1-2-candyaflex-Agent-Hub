@@ -19,7 +19,7 @@ class MaterialWrite(BaseModel):
     subject: str = Field(min_length=1, max_length=200)
     title: str = Field(min_length=1, max_length=200)
     url: HttpUrl
-    kind: str = Field(pattern=r"^(pdf|pptx|google_slides|canva|link)$")
+    kind: str = Field(pattern=r"^(pdf|pptx|mp4|google_slides|canva|link)$")
     note: str = Field(default="", max_length=1000)
 
     @field_validator("url")
@@ -75,18 +75,22 @@ def material_file(key: str, download: bool = False, repo=Depends(get_repository)
     if not record or record.get("source_type") not in {"local_file", "firestore_file"}:
         raise HTTPException(404, "교재 파일을 찾을 수 없습니다.")
     if record.get("source_type") == "firestore_file":
+        kind = record.get('kind', 'pdf')
+        if kind not in {'pdf', 'mp4'}:
+            raise HTTPException(404, '지원하지 않는 열람 파일 형식입니다.')
         try:
-            target = get_material_file_store().get_file(record.get("storage_sha256"))
+            store = get_material_file_store()
+            target = store.get_file(record.get('storage_sha256'), kind='mp4') if kind == 'mp4' else store.get_file(record.get('storage_sha256'))
         except MaterialFileUnavailable as exc:
             raise HTTPException(503, str(exc)) from exc
-        return FileResponse(target, media_type="application/pdf", filename=record.get("file_name", "교재.pdf"),
+        return FileResponse(target, media_type='video/mp4' if kind == 'mp4' else 'application/pdf', filename=record.get('file_name', '영상.mp4' if kind == 'mp4' else '교재.pdf'),
                             content_disposition_type="attachment" if download else "inline",
                             headers={"Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff"})
     root = LOCAL_LIBRARY.resolve()
     target = (root / record.get("storage_name", "")).resolve()
-    if target.parent != root or not target.is_file() or target.suffix.lower() not in {".pdf", ".pptx"}:
+    if target.parent != root or not target.is_file() or target.suffix.lower() not in {".pdf", ".pptx", ".mp4"}:
         raise HTTPException(404, "교재 파일을 찾을 수 없습니다.")
-    media = "application/pdf" if target.suffix.lower() == ".pdf" else "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+    media = {'.pdf': 'application/pdf', '.mp4': 'video/mp4', '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation'}[target.suffix.lower()]
     return FileResponse(target, media_type=media, filename=record.get("file_name", target.name),
                         content_disposition_type="attachment" if download else "inline")
 

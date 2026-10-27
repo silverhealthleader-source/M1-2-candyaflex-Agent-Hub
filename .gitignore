@@ -21,6 +21,7 @@ docs/verification/
 *.hwpx
 *.pdf
 *.pptx
+*.mp4
 *.csv
 
 # Presenter slides, speeches and notes are retained in private submission folders.

@@ -1,4 +1,4 @@
-"""Private PDF and PowerPoint storage; never public static assets."""
+"""Private PDF, PowerPoint and MP4 storage; never public static assets."""
 import hashlib
 import math
 from functools import lru_cache
@@ -60,6 +60,23 @@ def pptx_metadata(path):
             'chunk_bytes': CHUNK_BYTES, 'file_kind': 'pptx'}
 
 
+def mp4_metadata(path):
+    path = Path(path)
+    size = path.stat().st_size
+    if path.suffix.lower() != '.mp4' or not 16 <= size <= MAX_PDF_BYTES:
+        raise ValueError('웹 재생용 MP4는 32 MiB 이하로 선택해 주세요.')
+    digest = hashlib.sha256()
+    with path.open('rb') as source:
+        header = source.read(12)
+        if header[4:8] != b'ftyp' or not 16 <= int.from_bytes(header[:4], 'big') <= min(size, 1024 * 1024):
+            raise ValueError('MP4 파일 형식을 확인해 주세요.')
+        source.seek(0)
+        for chunk in iter(lambda: source.read(CHUNK_BYTES), b''):
+            digest.update(chunk)
+    return {'sha256': digest.hexdigest(), 'size_bytes': size,
+            'chunk_count': math.ceil(size / CHUNK_BYTES), 'chunk_bytes': CHUNK_BYTES, 'file_kind': 'mp4'}
+
+
 class MaterialFileStore:
     def __init__(self, db, cache_dir):
         self.db = db
@@ -72,6 +89,9 @@ class MaterialFileStore:
 
     def store_pptx(self, path, stamp):
         return self._store(path, stamp, pptx_metadata(path))
+
+    def store_mp4(self, path, stamp):
+        return self._store(path, stamp, mp4_metadata(path))
 
     def _store(self, path, stamp, metadata):
         ref = self.db.collection('material_files').document(metadata['sha256'])
@@ -102,7 +122,7 @@ class MaterialFileStore:
         return metadata
 
     def get_file(self, digest, kind='pdf'):
-        if kind not in {'pdf', 'pptx'}:
+        if kind not in {'pdf', 'pptx', 'mp4'}:
             raise MaterialFileUnavailable('지원하지 않는 교재 파일 형식입니다.')
         if not isinstance(digest, str) or len(digest) != 64 or any(c not in '0123456789abcdef' for c in digest):
             raise MaterialFileUnavailable('교재 파일 식별자를 확인해 주세요.')
