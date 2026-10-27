@@ -230,6 +230,11 @@ const BOOKS = [
  {title:"시간의 상점", detail:"손애희 · 부크크 · 종이책", url:"https://www.yes24.com/product/goods/151661062"},
  {title:"우리는 디지털 튜터다", detail:"손애희 참여 공저 · 재노북스 · 종이책", url:"https://www.yes24.com/product/goods/141888975", extra:[["출판사 도서 페이지 · 재노북스","https://www.zenobooks.co.kr/?idx=35"]]}
 ];
+const ONLINE_CLASSROOM = {
+ t:"AI디지털 배움터 온라인 교실", st:"live", role:"40~50대 생성형 AI 실무·생활 활용 17회차 LMS — 회차 카드, 슬라이드, 퀴즈, 체크리스트, 출석", aud:["40~50대 시민","디지털 초보자"], type:"교재 웹앱",
+ items:["챗GPT 첫 대화 · AI 도구 선택 · NotebookLM · Canva 포스터","홍보 콘텐츠 · 맞춤 AI 비서 · Suno · 프로젝트 발표","고급 프롬프트 · 설문 자동 생성 · 반복 업무 · 웹앱 만들기","SNS 운영 · AI 이미지·이모티콘 · 디지털 안전·재난 대비"],
+ res:[["온라인 교실 열기 ↗","https://claude.ai/artifact/6uK2ZfYMyGMh1w4q28WdEN","gold"]]
+};
 // st: live(링크 있음) / link(자료 있음, 링크 미연결) / plan(기획·진행)
 const CATS = [
  { id:"story", color:"#D9607A", name:"동화책·스토리텔링", tag:"Storytelling",
@@ -268,8 +273,7 @@ const CATS = [
  { id:"baeumteo", color:"#228DC5", name:"AI 디지털배움터", tag:"Digital Learning Center",
    desc:"다양한 연령의 시민을 위한 생성형 AI·스마트폰·로봇 교육. 큰 글씨, 한 화면에 한 과제, 따라 하기 원칙으로 설계합니다.",
    agents:[
-    { t:"AI디지털 배움터 온라인 교실", st:"live", role:"40~50대 생성형 AI 실무·생활 활용 17회차 LMS — 회차 카드, 슬라이드, 퀴즈, 체크리스트, 출석", aud:["40~50대 시민","디지털 초보자"], type:"교재 웹앱",
-      items:["챗GPT 첫 대화 · AI 도구 선택 · NotebookLM · Canva 포스터","홍보 콘텐츠 · 맞춤 AI 비서 · Suno · 프로젝트 발표","고급 프롬프트 · 설문 자동 생성 · 반복 업무 · 웹앱 만들기","SNS 운영 · AI 이미지·이모티콘 · 디지털 안전·재난 대비"], res:[["교실 열기",A("2fcb7a95-7c31-4ef2-b6f0-f913b6f5752f"),"gold"]] },
+    ONLINE_CLASSROOM,
     { t:"캔디A · 쉬운 AI 배움터", st:"live", role:"디지털 초보 시니어가 AI를 천천히 하나씩 배우고 쉬운 질문을 연습하는 학습 안내 사이트 — AI 대화는 디어로 디지털배움터와 연결", aud:["시니어","디지털 초보자","배움터 수강생"], type:"학습 안내 웹사이트",
       items:["AI 시작하기 · 질문 연습하기","다시 떠올리기(복습) · 안전하게 이용하기","도움말, 글자 크기 2단 조절(기본·크게)","\"오늘 배운 한 가지를 소중한 사람에게\" — 배워서 남주자"], res:[["배움터 열기","https://candya-senior-ai-learning.candyaflex.chatgpt.site","gold"]], note:"디어로 원본 서비스는 시범 운영 중이며 사용량·운영 정책이 바뀔 수 있습니다 (사이트 표기 확인일 2026.10.15)." },
     { t:"AI 실습 도우미", st:"live", role:"코코아팹 실습 도구 허브와 '인공지능 첫 걸음' 4단계 가이드, 4주 실천표", aud:["시니어","AI 입문자"], type:"웹앱",
@@ -427,7 +431,7 @@ const PAGES = [
         <span class="eyebrow">캔디A플렉스 에듀 융합에이전트</span>
         <h1>하나의 입구,<br>영역별 <em>전문 에이전트</em></h1>
         <p>동화책 창작, AI 영상·음악, 시니어 디지털배움터, 사회복지 현장 AI, 캔바 디자인, 업무 자동화, 소상공인 교육, 코딩·데이터. 손애희 강사가 만든 교재·웹앱·슬라이드·스킬을 영역별 에이전트로 정리했습니다. 메뉴에서 영역을 고르면 담당 에이전트 페이지로 이동합니다.</p>
-        <div class="actions"><a class="btn btn-gold" href="education.html#agents">강사 에이전트 실행 ↗</a><button class="btn btn-outline" data-go="story">첫 영역 보기</button><button class="btn btn-outline" data-go="lib">자료실</button><button class="btn btn-outline" data-go="about">강사 소개</button></div>
+        <div class="actions"><a class="btn btn-gold" href="education.html#agents">강사 에이전트 실행 ↗</a><button class="btn btn-primary" data-go="online-classroom">온라인 교실</button><button class="btn btn-outline" data-go="story">첫 영역 보기</button><button class="btn btn-outline" data-go="lib">자료실</button><button class="btn btn-outline" data-go="about">강사 소개</button></div>
       </div>
       <div class="kpi">
         <div><b>${CATS.length}</b><span>교육 영역</span></div>
@@ -459,6 +463,12 @@ const PAGES = [
     </div>
     <div class="grid">${c.agents.map(k=>agentCard(k,c)).join("")}</div>
   </div>`; } })),
+ { id:"online-classroom", label:"온라인 교실", grp:"온라인 수업", color:"#228DC5", render(){ return `
+  <div class="inner" style="--c:#228DC5">
+    <div class="crumb">홈 <span class="sep">/</span> 온라인 교실</div>
+    <div class="phead"><div><span class="eyebrow">Online Classroom</span><h1><span class="bar"></span>AI디지털 배움터 온라인 교실</h1><p>수업 회차를 선택해 일정과 학습 안내를 확인하고, 교재와 실습 자료를 열어보세요. 온라인 교실은 새 탭에서 열립니다.</p></div></div>
+    <div class="grid">${agentCard(ONLINE_CLASSROOM,{color:"#228DC5"})}</div>
+  </div>`; } },
  { id:"tools", label:"공용 수업 도구", grp:"자료", n:TOOLS.length, render(){ return `
   <div class="inner">
     <div class="crumb">홈 <span class="sep">/</span> 공용 수업 도구</div>
