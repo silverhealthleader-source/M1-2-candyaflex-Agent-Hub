@@ -2,6 +2,8 @@
 
 평가 화면의 61%(11/18)는 당시 제출한 자료에 대한 사전평가 결과입니다. 아래는 보완 내용과 확인 방법이며 실제 재평가 점수를 대신하지 않습니다. 공개 저장소에는 코드와 일반 설명만, 비공개 제출 ZIP에는 `실행검증.md`와 운영 화면을 담습니다. 가상 예시를 실제 운영 결과로 표현하지 않습니다.
 
+동료의 문서 기반 평가에서 지적한 100건·실제 GPT·복원·평가자 접근 문제는 [7단계 실제 시연 안내](peer-review-walkthrough.md)로 확인합니다. 최신 비공개 기록 `실행검증-최신.md`는 과거 캡처와 이번 재검사 시각·범위를 구분합니다. 새 공식 점수를 받은 것으로 표현하지 않습니다.
+
 | 항목 | 확인 내용 | 코드·설명 | 비공개 ZIP 실행 근거 |
 |---|---|---|---|
 | 1 | 프론트·백엔드 배포 접속 | README 접속 표 | Vercel /education·Render /health HTTP 200, 배포 화면 |
@@ -117,7 +119,7 @@ Content-Type: application/json
 
 ## 14. 배포 비밀값과 키 교체 절차
 
-OpenAI 키·서비스 계정 JSON·APP_ACCESS_TOKEN은 Render Web Service의 Environment 비공개 값으로 관리합니다. Vercel에는 공개 가능한 API_BASE_URL만 둡니다. 로컬은 Git에서 제외한 backend/.env와 자격증명 경로를 사용합니다. 저장소에 실제 키를 넣지 않습니다.
+OpenAI 키·서비스 계정 JSON·APP_ACCESS_TOKEN은 Render Web Service의 Environment 비공개 값으로 관리합니다. Vercel에는 공개 가능한 API_BASE_URL과 서버 전용 비공개 SITE_ACCESS_CODE를 구분해 설정합니다. SITE_ACCESS_CODE를 정적 config.js에 삽입하지 않습니다. 로컬은 Git에서 제외한 backend/.env와 자격증명 경로를 사용합니다. 저장소에 실제 키를 넣지 않습니다.
 
 정상 교체 절차는 새 키를 서비스 공식 화면에서 준비→Render 비공개 환경변수 교체·재배포→health와 보호 API·Firestore 연결 확인→새 키로 작은 호출 1회 확인→이전 키 폐기입니다. Firebase 서비스 계정 키도 새 JSON으로 연결을 확인한 뒤 이전 키를 폐기합니다. 키 발급·삭제·권한 변경은 운영자가 직접 수행하며 이번 문서 보완 중 실제 키를 변경하지 않았습니다. 긴급 유출이면 이전 키 폐기를 우선하고 코드·로그 노출도 함께 점검합니다.
 

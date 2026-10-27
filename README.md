@@ -13,6 +13,8 @@
 
 사전평가 보완 설명은 [18개 평가 항목과 검증 방법](docs/evaluation-evidence.md)에 정리했습니다. **코드 구현, 자동 테스트, 실제 배포 실행 기록은 서로 다른 근거**입니다. 비공개 제출 ZIP의 `실행검증.md`에는 실제 HTTP 요청·응답, Firestore 직접 재조회, 대화 전체 메시지 복원 결과를 Markdown으로 수록하고 `screenshots/`의 실제 화면을 연결합니다. 이미지가 분석되지 않는 평가에서도 실행 결과의 본문을 읽을 수 있게 구성했습니다. 이 설명은 점수나 통과를 보장하는 선언이 아닙니다.
 
+**동료평가를 시작하는 분:** [7단계 실제 시연·증빙 확인 안내](docs/peer-review-walkthrough.md)를 먼저 읽어 주세요. 가상 120건 생성 코드, 실제 DB 저장 확인, 실제 GPT 생성 결과는 서로 다른 증거로 구분합니다. 공개 소스만 확인한 점수를 실제 실행 점수로 표시하지 않습니다.
+
 ## 사이트 입장 인증
 
 Vercel의 서버 전용 비공개 환경변수 `SITE_ACCESS_CODE`로 사이트 입장 번호를 직접 설정합니다. 실제 값은 코드·GitHub·브라우저 설정 파일에 포함하지 않습니다. 번호가 없으면 사이트를 열지 않으며 교육운영 API의 기존 개인 접속 키 보호도 유지합니다. [설정·변경·접속 종료 안내](docs/site-access.md)를 참고하세요. Render 운영 배포는 API·Swagger를 제공하고 프론트 화면은 인증된 Vercel에서만 제공합니다.
@@ -110,7 +112,7 @@ Invoke-RestMethod -Method Delete -Uri "http://127.0.0.1:8010/api/data/$($taskRec
 
 ## 환경변수
 
-서버에서 `backend/.env.example`을 비공개 `backend/.env`로 복사합니다. Vercel에는 공개 가능한 API 서버 주소만 설정합니다.
+서버에서 `backend/.env.example`을 비공개 `backend/.env`로 복사합니다. Vercel의 `API_BASE_URL`은 프론트에 공개되는 서버 주소이고, `SITE_ACCESS_CODE`는 Vercel 서버에서만 사용하는 비공개 값입니다.
 
 | 변수 | 용도 |
 |---|---|
@@ -124,6 +126,7 @@ Invoke-RestMethod -Method Delete -Uri "http://127.0.0.1:8010/api/data/$($taskRec
 | `APP_ENV` | 로컬 `development`, Render `production` |
 | `ALLOWED_ORIGINS` | 허용 Vercel 출처, 쉼표 구분 |
 | `API_BASE_URL` | Vercel 빌드·선택 MCP 클라이언트의 API 주소 |
+| `SITE_ACCESS_CODE` | Vercel 서버 전용 입장 번호. Secret/Production, 8자 이상. 프론트 빌드 결과에 삽입하지 않음 |
 | `FIRESTORE_EMULATOR_HOST` | 로컬 에뮬레이터 전용. Render에서는 비움 |
 | `FIRESTORE_CACHE_SECONDS` | 조회 캐시, 기본 900초. 대화 목록 최대 30초 |
 
@@ -172,7 +175,7 @@ node --check frontend/workspace.js
 node frontend/build.mjs
 ```
 
-자동 테스트 **66개**는 CRUD·대화·요약·Function Calling·일정 분리·PDF 저장과 손상 검증을 확인합니다. `tests/conftest.py`가 해당 pytest 프로세스의 개인 키·DB 연결 설정을 비워 테스트 전용 저장소와 모의 AI를 사용합니다. `.env` 파일 자체는 수정하지 않습니다.
+백엔드 자동 테스트 **74개**는 CRUD·대화·요약·Function Calling·일정 분리·PDF 저장과 손상 검증, 배포 증빙의 건수·통계 불일치 탐지를 확인합니다. 프론트 사이트 인증 테스트는 별도로 `cd frontend` 후 `npm test`로 실행합니다. `tests/conftest.py`가 해당 pytest 프로세스의 개인 키·DB 연결 설정을 비워 테스트 전용 저장소와 모의 AI를 사용합니다. `.env` 파일 자체는 수정하지 않습니다.
 
 운영 배포의 읽기 전용 점검은 아래 명령으로 재현합니다. `APP_ACCESS_TOKEN`은 비공개 `.env` 또는 환경변수에만 저장합니다.
 
@@ -180,11 +183,11 @@ node frontend/build.mjs
 .\.venv\Scripts\python.exe backend/scripts/check_deployment.py --api-url https://candyaflex-edu-api.onrender.com --origin https://candyaflex-edu-agent-hub.vercel.app
 ```
 
-Swagger·필수 API 스키마·CORS·접속 보호·100개 이상 데이터·입력 검증·대화 상세·프론트 연결을 확인하고 `.local/verification/deployment-readiness.json`에 비공개 결과를 저장합니다. 이 읽기 전용 점검 자체는 실제 GPT 호출이나 데이터 변경을 하지 않습니다. 최종 비공개 ZIP에는 별도의 실제 채팅·390px 화면 CRUD·수동 저장·복원 증빙과 18개 항목별 검증표를 함께 제공합니다.
+Swagger·필수 API 스키마·CORS·접속 보호·100개 이상 데이터·입력 검증·대화 상세를 확인하고, 전체 목록의 고유 ID·건수·기간·합계·평균·최댓값·최솟값을 독립 계산하여 요약 API와 대조합니다. `.local/verification/deployment-readiness.json`에 비공개 결과를 저장하며 실제 GPT 호출이나 데이터 변경은 하지 않습니다. `SITE_ACCESS_CODE`를 로컬 비공개 환경변수에 제공하지 않았다면 입장 차단까지만 확인하고 `frontend_content_verified=false`로 남깁니다. 이것을 인증 후 프론트 시연 성공으로 해석하지 않습니다. 최종 비공개 ZIP에는 별도의 실제 채팅·CRUD·저장·복원 증빙을 함께 제공합니다.
 
 ## 배포와 운영
 
-Render는 `render.yaml`의 `backend` 루트와 Python 시작 명령을 사용합니다. 서버 비공개 환경변수와 실제 Vercel 출처를 설정합니다. Vercel Root Directory는 `frontend`, 빌드 환경변수는 `API_BASE_URL`입니다. `frontend/vercel.json`이 빌드와 출력 폴더를 지정합니다.
+Render는 `render.yaml`의 `backend` 루트와 Python 시작 명령을 사용합니다. 서버 비공개 환경변수와 실제 Vercel 출처를 설정합니다. Vercel Root Directory는 `frontend`, 빌드 환경변수는 `API_BASE_URL`, 서버 비공개 환경변수는 `SITE_ACCESS_CODE`입니다. `frontend/vercel.json`이 빌드와 출력 폴더를 지정합니다.
 
 강사 화면의 **연결 설정**에 개인 접속 키를 입력합니다. 키는 현재 탭 세션에 보관합니다. Swagger는 **Authorize**에서 같은 키를 사용합니다. 무료 Render의 첫 연결은 늦을 수 있으며 화면에서 대기·재시도를 안내합니다.
 

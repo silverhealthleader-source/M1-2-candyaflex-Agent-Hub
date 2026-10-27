@@ -4,12 +4,30 @@ from datetime import datetime, timezone
 import json
 import os
 from pathlib import Path
+from math import isclose
+from statistics import mean
 from urllib.parse import urlsplit
 
 from dotenv import load_dotenv
 import httpx
 
 ROOT = Path(__file__).resolve().parents[2]
+
+
+def verify_data_statistics(rows, summary):
+    """Independently compare returned records with the public summary contract."""
+    assert len({row['id'] for row in rows}) == len(rows), '목록 ID가 중복되었습니다.'
+    assert len(rows) == summary['count'], '목록과 요약의 건수가 다릅니다.'
+    values = [row['value'] for row in rows]
+    expected = {'total': round(sum(values), 2),
+                'average': round(mean(values), 2) if values else 0,
+                'max': max(values, default=0), 'min': min(values, default=0)}
+    for field, value in expected.items():
+        assert isclose(summary['metrics'][field], value, abs_tol=1e-8), f'요약 {field}가 목록의 계산값과 다릅니다.'
+    dates = [row['date'] for row in rows]
+    assert summary['period'] == {'start': min(dates, default=None), 'end': max(dates, default=None)}
+    return {'listed_records': len(rows), 'summary_count': summary['count'],
+            'period_and_statistics_match': True, 'metrics': expected}
 
 
 def main():
@@ -56,6 +74,16 @@ def main():
         assert all(key in summary['metrics'] for key in ['total', 'average', 'max', 'min'])
         assert summary['period']['start'] and summary['period']['end'] and summary['trend']['label']
         checks.append('At least 100 points and period / statistics / trend summary')
+        rows = []
+        while True:
+            page = get(f'/api/data?limit=1000&offset={len(rows)}')
+            assert page['total'] == summary['count'], '검사 중 데이터가 변경되었습니다. 변경을 마친 후 다시 실행하세요.'
+            rows.extend(page['items'])
+            if len(rows) >= page['total']:
+                break
+            assert page['items'], '목록 페이지가 조기에 끝났습니다.'
+        statistics = verify_data_statistics(rows, summary)
+        checks.append('Persisted list count and independently recomputed period / total / average / max / min')
         invalid = client.get(base + '/api/data?limit=0', headers=headers)
         assert invalid.status_code == 422
         history = get('/api/conversations')
@@ -90,6 +118,7 @@ def main():
     report = {'checked_at_utc': datetime.now(timezone.utc).isoformat(), 'passed': True,
         'api_url': base, 'frontend_origin': origin, 'checks': checks, 'required_api_methods': required,
         'conversation_detail_restored': restored, 'saved_data_count': summary['count'],
+        'data_statistics_verification': statistics,
         'site_access_gate_detected': gated, 'frontend_content_verified': content_verified,
         'production_mutations': 0, 'gpt_requests': 0,
         'scope': 'No production data mutations or GPT calls. Optional SITE_ACCESS_CODE signs in without recording its value. When absent, a configured gate is checked; authenticated content still needs UI verification.'}
@@ -99,4 +128,9 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except (AssertionError, httpx.HTTPError) as error:
+        # Do not include headers, private response bodies or request parameters.
+        message = str(error) if isinstance(error, AssertionError) else '서비스 연결 또는 HTTP 응답 확인에 실패했습니다.'
+        raise SystemExit('FAIL: ' + message) from None
